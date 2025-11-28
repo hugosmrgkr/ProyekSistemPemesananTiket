@@ -4,10 +4,6 @@
  */
 package Pemesanan;
 
-/**
- *
- * @author TUF GAMING
- */
 public class Booking {
     
 }
