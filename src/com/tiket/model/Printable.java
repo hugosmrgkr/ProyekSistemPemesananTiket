@@ -5,9 +5,23 @@
 package com.tiket.model;
 
 /**
- *
- * @author TUF GAMING
+ * Interface Printable
+ * Menerapkan konsep: INTERFACE
+ * 
+ * Interface untuk class yang bisa dicetak/disimpan ke file
  */
-public class Printable {
+public interface Printable {
     
+    
+     //Method untuk generate struk dalam bentuk String
+     //@return String berisi format struk
+     
+    String cetakStruk();
+    
+    
+//     Method untuk menyimpan struk ke file
+//     @param path lokasi file
+//     @return true jika berhasil, false jika gagal
+     
+    boolean simpanKeFile(String path);
 }
