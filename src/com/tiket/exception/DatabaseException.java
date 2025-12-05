@@ -4,10 +4,13 @@
  */
 package com.tiket.exception;
 
-/**
- *
- * @author TUF GAMING
- */
-public class DatabaseException {
-    
+public class DatabaseException extends RuntimeException {
+
+    public DatabaseException(String message) {
+        super(message);
+    }
+
+    public DatabaseException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

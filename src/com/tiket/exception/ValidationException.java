@@ -4,10 +4,9 @@
  */
 package com.tiket.exception;
 
-/**
- *
- * @author TUF GAMING
- */
-public class ValidationException {
-    
+public class ValidationException extends RuntimeException {
+
+    public ValidationException(String message) {
+        super(message);
+    }
 }

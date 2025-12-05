@@ -4,10 +4,9 @@
  */
 package com.tiket.exception;
 
-/**
- *
- * @author TUF GAMING
- */
-public class TiketNotFoundException {
-    
+public class TiketNotFoundException extends RuntimeException {
+
+    public TiketNotFoundException(String message) {
+        super(message);
+    }
 }
