@@ -1,1 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.tiket.controller.AppController">
+
+    <!-- ============ SIDEBAR (KIRI) ============ -->
+    <left>
+        <VBox fx:id="sidebar"
+              prefWidth="200"
+              spacing="15"
+              alignment="TOP_CENTER"
+              style="-fx-background-color: #DEE2E6; -fx-padding: 20;">
+            <Label text="MENU"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+
+            <!-- Tombol-tombol akan diisi lewat controller -->
+        </VBox>
+    </left>
+
+    <!-- ============ HEADER (ATAS) ============ -->
+    <top>
+        <HBox padding="15" spacing="20"
+              style="-fx-background-color: #343A40;">
+            <Label fx:id="lblMode"
+                   text="Mode: -"
+                   style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;" />
+        </HBox>
+    </top>
+
+    <!-- ============ PANEL KONTEN (TENGAH) ============ -->
+    <center>
+        <StackPane fx:id="panelKonten"
+                   style="-fx-background-color: #F8F9FA;"
+                   prefWidth="800"
+                   prefHeight="600">
+            <Label text="Silakan pilih menu di sebelah kiri"
+                   style="-fx-font-size: 18px; -fx-text-fill: #495057;" />
+        </StackPane>
+    </center>
+
+</BorderPane>
