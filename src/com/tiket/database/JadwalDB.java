@@ -16,6 +16,80 @@ import java.util.List;
  */
 public class JadwalDB {
 
+    // ============================================================
+    // ALIAS METHODS untuk AppController (yang dipanggil controller)
+    // ============================================================
+    
+    /**
+     * Alias untuk getAllJadwal() - dipanggil oleh AppController
+     */
+    public List<Jadwal> getAll() throws DatabaseException {
+        return getAllJadwal();
+    }
+    
+    /**
+     * Alias untuk insertJadwal() - dipanggil oleh AppController
+     */
+    public boolean create(Jadwal jadwal) throws DatabaseException {
+        return insertJadwal(jadwal);
+    }
+    
+    /**
+     * Alias untuk updateJadwal() - dipanggil oleh AppController
+     */
+    public boolean update(Jadwal jadwal) throws DatabaseException {
+        return updateJadwal(jadwal);
+    }
+    
+    /**
+     * Alias untuk deleteJadwal() - dipanggil oleh AppController
+     */
+    public boolean delete(String idJadwal) throws DatabaseException {
+        return deleteJadwal(idJadwal);
+    }
+    
+    /**
+     * Method search untuk pencarian jadwal
+     */
+    public List<Jadwal> search(String asal, String tujuan, String tanggal) throws DatabaseException {
+        List<Jadwal> daftarJadwal = new ArrayList<>();
+        
+        String sql = "SELECT * FROM Jadwal WHERE lokasiAsal LIKE ? AND lokasiTujuan LIKE ? " +
+                     "AND DATE(waktuBerangkat) = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, "%" + asal + "%");
+            ps.setString(2, "%" + tujuan + "%");
+            ps.setString(3, tanggal);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Jadwal j = new Jadwal(
+                        rs.getString("idJadwal"),
+                        rs.getString("idBus"),
+                        rs.getString("lokasiAsal"),
+                        rs.getString("lokasiTujuan"),
+                        rs.getTimestamp("waktuBerangkat").toLocalDateTime(),
+                        rs.getTimestamp("waktuTiba").toLocalDateTime(),
+                        rs.getDouble("harga")
+                    );
+                    daftarJadwal.add(j);
+                }
+            }
+            
+        } catch (SQLException e) {
+            throw new DatabaseException("Gagal mencari jadwal: " + e.getMessage(), e);
+        }
+        
+        return daftarJadwal;
+    }
+
+    // ============================================================
+    // ORIGINAL METHODS (dari code Anda)
+    // ============================================================
+
     public List<Jadwal> getAllJadwal() throws DatabaseException {
         List<Jadwal> daftarJadwal = new ArrayList<>();
 
@@ -29,7 +103,7 @@ public class JadwalDB {
 
                 Jadwal j = new Jadwal(
                         rs.getString("idJadwal"),
-                        rs.getString("idBus"),   // sesuai model Jadwal
+                        rs.getString("idBus"),
                         rs.getString("lokasiAsal"),
                         rs.getString("lokasiTujuan"),
                         rs.getTimestamp("waktuBerangkat").toLocalDateTime(),
