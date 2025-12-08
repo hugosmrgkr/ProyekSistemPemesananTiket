@@ -14,10 +14,17 @@ public class Main extends Application {
             System.out.println("=== SISTEM PEMESANAN TIKET BUS ===");
             System.out.println("Memuat halaman awal...");
 
-            Parent root = FXMLLoader.load(getClass().getResource("/view/pilih_mode.fxml"));
+            System.out.println("CEK RESOURCE: " + getClass().getResource("/com/tiket/view/pilih_mode.fxml"));
+
+            FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/tiket/view/pilih_mode.fxml")
+            );
+
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
 
             primaryStage.setTitle("Sistem Pemesanan Tiket Bus");
-            primaryStage.setScene(new Scene(root));
+            primaryStage.setScene(scene);
             primaryStage.show();
 
         } catch (Exception e) {

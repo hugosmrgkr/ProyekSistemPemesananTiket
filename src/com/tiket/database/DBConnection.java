@@ -16,11 +16,6 @@ public class DBConnection {
     private static final String USER = "root"; 
     private static final String PASSWORD = "";
 
-    /**
-     * Mendapatkan objek koneksi ke database.
-     * @return 
-     * @throws SQLException jika terjadi error koneksi atau driver tidak ditemukan.
-     */
     public static Connection getConnection() throws SQLException {
         Connection connection = null;
         try {
@@ -33,10 +28,6 @@ public class DBConnection {
         return connection;
     }
 
-    /**
-     * Menutup objek koneksi.
-     * @param connection Koneksi yang akan ditutup.
-     */
     public static void closeConnection(Connection connection) {
         if (connection != null) {
             try {
