@@ -10,30 +10,36 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBConnection {
-    
+
     // Konfigurasi koneksi database
-    private static final String URL = "jdbc:mysql://localhost:3307/db_pemesanan_tiket"; 
-    private static final String USER = "root"; 
+    private static final String URL = 
+            "jdbc:mysql://localhost:3307/db_pemesanan_tiket?useSSL=false&serverTimezone=Asia/Jakarta";
+    private static final String USER = "root";
     private static final String PASSWORD = "";
 
+    /**
+     * Mendapatkan koneksi ke database.
+     */
     public static Connection getConnection() throws SQLException {
-        Connection connection = null;
         try {
+            // Load driver secara eksplisit (lebih aman)
             Class.forName("com.mysql.cj.jdbc.Driver");
-            connection = DriverManager.getConnection(URL, USER, PASSWORD);
-            
+            return DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (ClassNotFoundException e) {
-            throw new SQLException("Driver database tidak tersedia.", e);
+            throw new SQLException("Driver MySQL tidak ditemukan: " + e.getMessage(), e);
         }
-        return connection;
     }
 
+    /**
+     * Menutup koneksi database dengan aman.
+     */
     public static void closeConnection(Connection connection) {
         if (connection != null) {
             try {
-                connection.close();
+                if (!connection.isClosed()) {
+                    connection.close();
+                }
             } catch (SQLException e) {
-                // Mencatat (logging) error saat menutup koneksi, tapi tidak menghentikan program
                 System.err.println("Gagal menutup koneksi: " + e.getMessage());
             }
         }

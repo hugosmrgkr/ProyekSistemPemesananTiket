@@ -34,7 +34,7 @@ public class Jadwal {
     
     // Constructor dengan parameter
     public Jadwal(String idJadwal, String idBus, String lokasiAsal, String lokasiTujuan,
-                  LocalDateTime waktuBerangkat, LocalDateTime waktuTiba, double harga) {
+              LocalDateTime waktuBerangkat, LocalDateTime waktuTiba, double harga) {
         this.idJadwal = idJadwal;
         this.idBus = idBus;
         this.lokasiAsal = lokasiAsal;

@@ -59,11 +59,11 @@ public class KursiDB {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Kursi kursi = new Kursi(
-                        rs.getString("idKursi"),
-                        rs.getString("idJadwal"),
-                        rs.getInt("nomorKursi"),
-                        rs.getBoolean("tersedia")
-                    );
+    rs.getString("idKursi"),
+    rs.getString("idJadwal"),
+    rs.getInt("nomorKursi"),
+    rs.getBoolean("tersedia")
+);
                     daftarKursi.add(kursi);
                 }
             }
