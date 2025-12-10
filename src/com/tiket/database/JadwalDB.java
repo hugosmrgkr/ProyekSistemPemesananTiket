@@ -5,18 +5,27 @@ import com.tiket.exception.DatabaseException;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class JadwalDB {
 
     // Alias methods
-    public List<Jadwal> getAll() throws DatabaseException { return getAllJadwal(); }
-    public boolean create(Jadwal jadwal) throws DatabaseException { return insertJadwal(jadwal); }
-    public boolean update(Jadwal jadwal) throws DatabaseException { return updateJadwal(jadwal); }
-    public boolean delete(String idJadwal) throws DatabaseException { return deleteJadwal(idJadwal); }
+    public List<Jadwal> getAll() throws DatabaseException { 
+        return getAllJadwal(); 
+    }
+    
+    public boolean create(Jadwal jadwal) throws DatabaseException { 
+        return insertJadwal(jadwal); 
+    }
+    
+    public boolean update(Jadwal jadwal) throws DatabaseException { 
+        return updateJadwal(jadwal); 
+    }
+    
+    public boolean delete(String idJadwal) throws DatabaseException { 
+        return deleteJadwal(idJadwal); 
+    }
 
     // -------------------------------------------------------
     // SEARCH
@@ -68,7 +77,7 @@ public class JadwalDB {
     }
 
     // -------------------------------------------------------
-    // INSERT
+    // INSERT - FIXED: Langsung pakai LocalDateTime
     // -------------------------------------------------------
     public boolean insertJadwal(Jadwal jadwal) throws DatabaseException {
         String sql = "INSERT INTO Jadwal (idJadwal, idBus, lokasiAsal, lokasiTujuan, waktuBerangkat, waktuTiba, harga) "
@@ -77,10 +86,9 @@ public class JadwalDB {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
-
-            LocalDateTime berangkat = LocalDateTime.parse(jadwal.getWaktuBerangkat(), format);
-            LocalDateTime tiba = LocalDateTime.parse(jadwal.getWaktuTiba(), format);
+            // FIXED: Langsung ambil LocalDateTime dari getter
+            LocalDateTime berangkat = jadwal.getWaktuBerangkat();
+            LocalDateTime tiba = jadwal.getWaktuTiba();
 
             ps.setString(1, jadwal.getIdJadwal());
             ps.setString(2, jadwal.getIdBus());
@@ -92,16 +100,13 @@ public class JadwalDB {
 
             return ps.executeUpdate() > 0;
 
-        } catch (DateTimeParseException e) {
-            throw new DatabaseException(
-                    "Format tanggal salah. Gunakan: dd-MM-yyyy HH:mm", e);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw new DatabaseException("Gagal menambahkan jadwal: " + e.getMessage(), e);
         }
     }
 
     // -------------------------------------------------------
-    // UPDATE
+    // UPDATE - FIXED: Langsung pakai LocalDateTime
     // -------------------------------------------------------
     public boolean updateJadwal(Jadwal jadwal) throws DatabaseException {
         String sql = "UPDATE Jadwal SET idBus=?, lokasiAsal=?, lokasiTujuan=?, waktuBerangkat=?, waktuTiba=?, harga=? "
@@ -110,10 +115,9 @@ public class JadwalDB {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
-
-            LocalDateTime berangkat = LocalDateTime.parse(jadwal.getWaktuBerangkat(), format);
-            LocalDateTime tiba = LocalDateTime.parse(jadwal.getWaktuTiba(), format);
+            // FIXED: Langsung ambil LocalDateTime dari getter
+            LocalDateTime berangkat = jadwal.getWaktuBerangkat();
+            LocalDateTime tiba = jadwal.getWaktuTiba();
 
             ps.setString(1, jadwal.getIdBus());
             ps.setString(2, jadwal.getLokasiAsal());
@@ -125,9 +129,7 @@ public class JadwalDB {
 
             return ps.executeUpdate() > 0;
 
-        } catch (DateTimeParseException e) {
-            throw new DatabaseException("Format tanggal salah. Gunakan: dd-MM-yyyy HH:mm", e);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw new DatabaseException("Gagal mengupdate jadwal: " + e.getMessage(), e);
         }
     }

@@ -4,176 +4,195 @@
  */
 package com.tiket.view;
 
-import com.tiket.model.Tiket;
-import com.tiket.helper.FileHelper;
-
-import javax.swing.*;
-import java.awt.*;
-import java.time.format.DateTimeFormatter;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 /**
- * Dialog untuk menampilkan struk pemesanan tiket
+ * View untuk menampilkan Struk Tiket (Popup)
+ * Pure Java - Tanpa FXML
  */
-public class StrukView extends JDialog {
+public class StrukView {
     
-    private Tiket tiket;
-    private FileHelper fileHelper;
+    private Stage stage;
+    private VBox root;
     
-    public StrukView(Tiket tiket) {
-        this.tiket = tiket;
-        this.fileHelper = new FileHelper();
-        
-        setTitle("Struk Pemesanan");
-        setSize(450, 650);
-        setModal(true);
-        setLocationRelativeTo(null);
-        
-        initComponents();
+    // Labels untuk data tiket
+    private Label lblIdTiket;
+    private Label lblTanggalPesan;
+    private Label lblNamaPelanggan;
+    private Label lblTeleponPelanggan;
+    private Label lblEmailPelanggan;
+    private Label lblLokasiAsal;
+    private Label lblLokasiTujuan;
+    private Label lblTanggalBerangkat;
+    private Label lblJamBerangkat;
+    private Label lblNomorKursi;
+    private Label lblHarga;
+    private TextArea txtStruk;
+    
+    private Button btnCetakFile;
+    private Button btnTutup;
+    
+    public StrukView(Stage parentStage) {
+        this.stage = new Stage();
+        this.stage.initModality(Modality.APPLICATION_MODAL);
+        this.stage.initOwner(parentStage);
+        initializeUI();
     }
     
-    private void initComponents() {
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBackground(Color.WHITE);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+    private void initializeUI() {
+        root = new VBox(15);
+        root.setPadding(new Insets(20));
+        root.setStyle("-fx-background-color: white;");
         
-        // Header
-        JPanel headerPanel = new JPanel();
-        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
-        headerPanel.setBackground(new Color(81, 207, 102));
-        headerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        // Title
+        Label title = new Label("✅ STRUK PEMESANAN TIKET");
+        title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;");
         
-        JLabel lblTitle = new JLabel("✓ PEMESANAN BERHASIL");
-        lblTitle.setFont(new Font("Arial", Font.BOLD, 20));
-        lblTitle.setForeground(Color.WHITE);
-        lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // Info Section
+        VBox infoSection = createInfoSection();
         
-        JLabel lblSubtitle = new JLabel("Struk Tiket Bus");
-        lblSubtitle.setFont(new Font("Arial", Font.PLAIN, 14));
-        lblSubtitle.setForeground(Color.WHITE);
-        lblSubtitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // Struk Text Area
+        Label lblStrukTitle = new Label("📄 Detail Struk:");
+        lblStrukTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
         
-        headerPanel.add(lblTitle);
-        headerPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        headerPanel.add(lblSubtitle);
-        
-        // Content - Struk
-        JTextArea txtStruk = new JTextArea();
+        txtStruk = new TextArea();
         txtStruk.setEditable(false);
-        txtStruk.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        txtStruk.setMargin(new Insets(10, 10, 10, 10));
-        txtStruk.setText(generateStrukText());
-        
-        JScrollPane scrollPane = new JScrollPane(txtStruk);
-        scrollPane.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        txtStruk.setPrefHeight(200);
+        txtStruk.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;");
         
         // Buttons
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        btnPanel.setBackground(Color.WHITE);
+        HBox buttonBox = new HBox(10);
+        buttonBox.setAlignment(Pos.CENTER);
         
-        JButton btnCetakFile = new JButton("💾 Simpan ke File");
-        btnCetakFile.setFont(new Font("Arial", Font.BOLD, 14));
-        btnCetakFile.setBackground(new Color(51, 154, 240));
-        btnCetakFile.setForeground(Color.WHITE);
-        btnCetakFile.setFocusPainted(false);
-        btnCetakFile.setBorderPainted(false);
-        btnCetakFile.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnCetakFile.setPreferredSize(new Dimension(160, 40));
-        btnCetakFile.addActionListener(e -> handleCetakFile());
+        btnCetakFile = new Button("💾 Simpan ke File");
+        btnCetakFile.setStyle(
+            "-fx-background-color: #339AF0; -fx-text-fill: white; " +
+            "-fx-font-size: 14px; -fx-padding: 10 20;"
+        );
         
-        JButton btnTutup = new JButton("✖ Tutup");
-        btnTutup.setFont(new Font("Arial", Font.BOLD, 14));
-        btnTutup.setBackground(new Color(134, 142, 150));
-        btnTutup.setForeground(Color.WHITE);
-        btnTutup.setFocusPainted(false);
-        btnTutup.setBorderPainted(false);
-        btnTutup.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnTutup.setPreferredSize(new Dimension(160, 40));
-        btnTutup.addActionListener(e -> dispose());
+        btnTutup = new Button("❌ Tutup");
+        btnTutup.setStyle(
+            "-fx-background-color: #868E96; -fx-text-fill: white; " +
+            "-fx-font-size: 14px; -fx-padding: 10 20;"
+        );
         
-        btnPanel.add(btnCetakFile);
-        btnPanel.add(btnTutup);
+        buttonBox.getChildren().addAll(btnCetakFile, btnTutup);
         
-        mainPanel.add(headerPanel, BorderLayout.NORTH);
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
-        mainPanel.add(btnPanel, BorderLayout.SOUTH);
-        
-        add(mainPanel);
+        // Add all to root
+        root.getChildren().addAll(title, infoSection, lblStrukTitle, txtStruk, buttonBox);
     }
     
-    private String generateStrukText() {
-        if (tiket == null) return "Data tiket tidak tersedia";
+    private VBox createInfoSection() {
+        VBox section = new VBox(10);
+        section.setStyle("-fx-background-color: #F8F9FA; -fx-padding: 15; -fx-background-radius: 5;");
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+        GridPane grid = new GridPane();
+        grid.setHgap(15);
+        grid.setVgap(8);
         
-        StringBuilder sb = new StringBuilder();
-        sb.append("=".repeat(40)).append("\n");
-        sb.append("        STRUK PEMESANAN TIKET BUS\n");
-        sb.append("=".repeat(40)).append("\n\n");
+        // Initialize labels
+        lblIdTiket = new Label("-");
+        lblTanggalPesan = new Label("-");
+        lblNamaPelanggan = new Label("-");
+        lblTeleponPelanggan = new Label("-");
+        lblEmailPelanggan = new Label("-");
+        lblLokasiAsal = new Label("-");
+        lblLokasiTujuan = new Label("-");
+        lblTanggalBerangkat = new Label("-");
+        lblJamBerangkat = new Label("-");
+        lblNomorKursi = new Label("-");
+        lblHarga = new Label("-");
         
-        sb.append("ID Tiket       : ").append(tiket.getIdTiket()).append("\n");
-        sb.append("Tanggal Pesan  : ");
-        if (tiket.getWaktuPemesanan() != null) {
-            sb.append(tiket.getWaktuPemesanan().format(formatter));
-        } else {
-            sb.append("-");
-        }
-        sb.append("\n\n");
+        // Style for data labels
+        String dataStyle = "-fx-font-weight: bold; -fx-text-fill: #2C3E50;";
+        lblIdTiket.setStyle(dataStyle);
+        lblTanggalPesan.setStyle(dataStyle);
+        lblNamaPelanggan.setStyle(dataStyle);
+        lblTeleponPelanggan.setStyle(dataStyle);
+        lblEmailPelanggan.setStyle(dataStyle);
+        lblLokasiAsal.setStyle(dataStyle);
+        lblLokasiTujuan.setStyle(dataStyle);
+        lblTanggalBerangkat.setStyle(dataStyle);
+        lblJamBerangkat.setStyle(dataStyle);
+        lblNomorKursi.setStyle(dataStyle);
+        lblHarga.setStyle(dataStyle);
         
-        sb.append("-".repeat(40)).append("\n");
-        sb.append("DATA PELANGGAN\n");
-        sb.append("-".repeat(40)).append("\n");
-        sb.append("Nama           : ").append(tiket.getNamaPelanggan()).append("\n");
-        sb.append("Telepon        : ").append(tiket.getTeleponPelanggan()).append("\n");
-        sb.append("Email          : ").append(tiket.getEmailPelanggan()).append("\n\n");
+        // Add to grid
+        int row = 0;
+        grid.add(createLabel("ID Tiket:"), 0, row);
+        grid.add(lblIdTiket, 1, row++);
         
-        sb.append("-".repeat(40)).append("\n");
-        sb.append("DETAIL PERJALANAN\n");
-        sb.append("-".repeat(40)).append("\n");
-        sb.append("Asal           : ").append(tiket.getLokasiAsal() != null ? tiket.getLokasiAsal() : "-").append("\n");
-        sb.append("Tujuan         : ").append(tiket.getLokasiTujuan() != null ? tiket.getLokasiTujuan() : "-").append("\n");
-        sb.append("Tanggal        : ").append(tiket.getTanggalBerangkat() != null ? tiket.getTanggalBerangkat() : "-").append("\n");
-        sb.append("Jam            : ").append(tiket.getJamBerangkat() != null ? tiket.getJamBerangkat() : "-").append("\n");
-        sb.append("Nomor Kursi    : ").append(tiket.getNomorKursi()).append("\n\n");
+        grid.add(createLabel("Tanggal Pesan:"), 0, row);
+        grid.add(lblTanggalPesan, 1, row++);
         
-        sb.append("-".repeat(40)).append("\n");
-        sb.append("PEMBAYARAN\n");
-        sb.append("-".repeat(40)).append("\n");
-        sb.append("Total Harga    : Rp ").append(String.format("%,.0f", tiket.getHarga())).append("\n\n");
+        grid.add(createLabel("Nama:"), 0, row);
+        grid.add(lblNamaPelanggan, 1, row++);
         
-        sb.append("=".repeat(40)).append("\n");
-        sb.append("  Terima kasih atas kepercayaan Anda!\n");
-        sb.append("     Selamat melakukan perjalanan\n");
-        sb.append("=".repeat(40)).append("\n");
+        grid.add(createLabel("Telepon:"), 0, row);
+        grid.add(lblTeleponPelanggan, 1, row++);
         
-        return sb.toString();
+        grid.add(createLabel("Email:"), 0, row);
+        grid.add(lblEmailPelanggan, 1, row++);
+        
+        grid.add(createLabel("Asal:"), 0, row);
+        grid.add(lblLokasiAsal, 1, row++);
+        
+        grid.add(createLabel("Tujuan:"), 0, row);
+        grid.add(lblLokasiTujuan, 1, row++);
+        
+        grid.add(createLabel("Tanggal Berangkat:"), 0, row);
+        grid.add(lblTanggalBerangkat, 1, row++);
+        
+        grid.add(createLabel("Jam Berangkat:"), 0, row);
+        grid.add(lblJamBerangkat, 1, row++);
+        
+        grid.add(createLabel("Nomor Kursi:"), 0, row);
+        grid.add(lblNomorKursi, 1, row++);
+        
+        grid.add(createLabel("Harga:"), 0, row);
+        grid.add(lblHarga, 1, row++);
+        
+        section.getChildren().add(grid);
+        return section;
     }
     
-    private void handleCetakFile() {
-        try {
-            boolean sukses = fileHelper.saveStrukToFile(tiket);
-            
-            if (sukses) {
-                JOptionPane.showMessageDialog(
-                    this,
-                    "Struk berhasil disimpan ke:\noutput/struk_" + tiket.getIdTiket() + ".txt",
-                    "Sukses",
-                    JOptionPane.INFORMATION_MESSAGE
-                );
-            } else {
-                JOptionPane.showMessageDialog(
-                    this,
-                    "Gagal menyimpan struk!",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-                );
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(
-                this,
-                e.getMessage(),
-                "Error",
-                JOptionPane.ERROR_MESSAGE
-            );
-        }
+    private Label createLabel(String text) {
+        Label lbl = new Label(text);
+        lbl.setStyle("-fx-text-fill: #7F8C8D; -fx-font-size: 12px;");
+        return lbl;
     }
+    
+    public void show() {
+        Scene scene = new Scene(root, 600, 700);
+        stage.setScene(scene);
+        stage.setTitle("Struk Pemesanan");
+        stage.showAndWait();
+    }
+    
+    // Getters untuk Controller
+    public Label getLblIdTiket() { return lblIdTiket; }
+    public Label getLblTanggalPesan() { return lblTanggalPesan; }
+    public Label getLblNamaPelanggan() { return lblNamaPelanggan; }
+    public Label getLblTeleponPelanggan() { return lblTeleponPelanggan; }
+    public Label getLblEmailPelanggan() { return lblEmailPelanggan; }
+    public Label getLblLokasiAsal() { return lblLokasiAsal; }
+    public Label getLblLokasiTujuan() { return lblLokasiTujuan; }
+    public Label getLblTanggalBerangkat() { return lblTanggalBerangkat; }
+    public Label getLblJamBerangkat() { return lblJamBerangkat; }
+    public Label getLblNomorKursi() { return lblNomorKursi; }
+    public Label getLblHarga() { return lblHarga; }
+    public TextArea getTxtStruk() { return txtStruk; }
+    public Button getBtnCetakFile() { return btnCetakFile; }
+    public Button getBtnTutup() { return btnTutup; }
+    public Stage getStage() { return stage; }
 }

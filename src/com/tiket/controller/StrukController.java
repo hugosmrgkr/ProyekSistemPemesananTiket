@@ -6,44 +6,35 @@ package com.tiket.controller;
 
 import com.tiket.model.Tiket;
 import com.tiket.helper.FileHelper;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import com.tiket.view.StrukView;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 import java.time.format.DateTimeFormatter;
 
 /**
- * Controller untuk struk.fxml (popup)
+ * Controller untuk StrukView (popup)
  * Menampilkan struk pemesanan
  * 
  * Menerapkan konsep: FILE I/O (via FileHelper)
  */
 public class StrukController {
     
-    @FXML private Label lblIdTiket;
-    @FXML private Label lblTanggalPesan;
-    @FXML private Label lblNamaPelanggan;
-    @FXML private Label lblTeleponPelanggan;
-    @FXML private Label lblEmailPelanggan;
-    @FXML private Label lblLokasiAsal;
-    @FXML private Label lblLokasiTujuan;
-    @FXML private Label lblTanggalBerangkat;
-    @FXML private Label lblJamBerangkat;
-    @FXML private Label lblNomorKursi;
-    @FXML private Label lblHarga;
-    @FXML private TextArea txtStruk;
-    
+    private StrukView view;
     private Tiket tiket;
     private FileHelper fileHelper;
     
-    @FXML
-    public void initialize() {
-        fileHelper = new FileHelper();
+    public StrukController(Stage parentStage, Tiket tiket) {
+        this.view = new StrukView(parentStage);
+        this.tiket = tiket;
+        this.fileHelper = new FileHelper();
+        setupEventHandlers();
+        tampilkanData();
     }
     
-    public void setTiket(Tiket tiket) {
-        this.tiket = tiket;
-        tampilkanData();
+    private void setupEventHandlers() {
+        view.getBtnCetakFile().setOnAction(e -> handleCetakFile());
+        view.getBtnTutup().setOnAction(e -> handleTutup());
     }
     
     private void tampilkanData() {
@@ -51,25 +42,22 @@ public class StrukController {
         
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
         
-        lblIdTiket.setText(tiket.getIdTiket());
-        lblTanggalPesan.setText(tiket.getWaktuPemesanan() != null ? 
+        view.getLblIdTiket().setText(tiket.getIdTiket());
+        view.getLblTanggalPesan().setText(tiket.getWaktuPemesanan() != null ? 
             tiket.getWaktuPemesanan().format(formatter) : "-");
-        lblNamaPelanggan.setText(tiket.getNamaPelanggan());
-        lblTeleponPelanggan.setText(tiket.getTeleponPelanggan());
-        lblEmailPelanggan.setText(tiket.getEmailPelanggan());
-        lblLokasiAsal.setText(tiket.getLokasiAsal() != null ? tiket.getLokasiAsal() : "-");
-        lblLokasiTujuan.setText(tiket.getLokasiTujuan() != null ? tiket.getLokasiTujuan() : "-");
-        lblTanggalBerangkat.setText(tiket.getTanggalBerangkat() != null ? tiket.getTanggalBerangkat() : "-");
-        lblJamBerangkat.setText(tiket.getJamBerangkat() != null ? tiket.getJamBerangkat() : "-");
-        lblNomorKursi.setText(String.valueOf(tiket.getNomorKursi()));
-        lblHarga.setText("Rp " + String.format("%,.2f", tiket.getHarga()));
+        view.getLblNamaPelanggan().setText(tiket.getNamaPelanggan());
+        view.getLblTeleponPelanggan().setText(tiket.getTeleponPelanggan());
+        view.getLblEmailPelanggan().setText(tiket.getEmailPelanggan());
+        view.getLblLokasiAsal().setText(tiket.getLokasiAsal() != null ? tiket.getLokasiAsal() : "-");
+        view.getLblLokasiTujuan().setText(tiket.getLokasiTujuan() != null ? tiket.getLokasiTujuan() : "-");
+        view.getLblTanggalBerangkat().setText(tiket.getTanggalBerangkat() != null ? tiket.getTanggalBerangkat() : "-");
+        view.getLblJamBerangkat().setText(tiket.getJamBerangkat() != null ? tiket.getJamBerangkat() : "-");
+        view.getLblNomorKursi().setText(String.valueOf(tiket.getNomorKursi()));
+        view.getLblHarga().setText("Rp " + String.format("%,.2f", tiket.getHarga()));
         
-        if (txtStruk != null) {
-            txtStruk.setText(tiket.cetakStruk());
-        }
+        view.getTxtStruk().setText(tiket.cetakStruk());
     }
     
-    @FXML
     private void handleCetakFile() {
         try {
             boolean sukses = fileHelper.saveStrukToFile(tiket);
@@ -94,9 +82,11 @@ public class StrukController {
         }
     }
     
-    @FXML
     private void handleTutup() {
-        Stage stage = (Stage) lblIdTiket.getScene().getWindow();
-        stage.close();
+        view.getStage().close();
+    }
+    
+    public void show() {
+        view.show();
     }
 }

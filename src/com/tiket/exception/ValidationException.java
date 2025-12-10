@@ -4,8 +4,10 @@
  */
 package com.tiket.exception;
 
-public class ValidationException extends RuntimeException {
-
+/**
+ * Exception untuk validasi input
+ */
+public class ValidationException extends Exception {
     public ValidationException(String message) {
         super(message);
     }

@@ -1,30 +1,59 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.tiket.controller;
 
-import com.tiket.database.*;
-import com.tiket.model.*;
-import com.tiket.exception.*;
+// Import explicit untuk Database
+import com.tiket.database.JadwalDB;
+import com.tiket.database.KursiDB;
+import com.tiket.database.TiketDB;
 
-import javafx.collections.*;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.geometry.*;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
+// Import explicit untuk Model
+import com.tiket.model.Jadwal;
+import com.tiket.model.Kursi;
+import com.tiket.model.Tiket;
+
+// Import explicit untuk Exception
+import com.tiket.exception.DatabaseException;
+import com.tiket.exception.ValidationException;
+
+// Import explicit untuk View - INI YANG PALING PENTING!
+import com.tiket.view.MainAppView;
+
+// Import JavaFX Collections
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
+// Import JavaFX Geometry
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+
+// Import JavaFX Controls
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.*;
-import javafx.stage.*;
 
+// Import JavaFX Layout
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+
+// Import JavaFX Stage
+import javafx.stage.Stage;
+
+// Import Java Time
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+
+// Import Java Utils
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Main Controller untuk main_view.fxml
+ * Main Controller untuk MainAppView
  * Handle semua panel: CRUD Jadwal, Pencarian, Pemesanan, Pilih Kursi
  * 
  * Menerapkan konsep:
@@ -33,40 +62,45 @@ import java.util.*;
  */
 public class AppController {
     
-    @FXML private VBox sidebar;
-    @FXML private Pane panelKonten;
-    @FXML private Label lblMode;
-    
-    private String modeAktif;
+    private final MainAppView view;
+    private final Stage stage;
+    private final String modeAktif;
     
     // Database
-    private JadwalDB jadwalDB;
-    private KursiDB kursiDB;
-    private TiketDB tiketDB;
+    private final JadwalDB jadwalDB;
+    private final KursiDB kursiDB;
+    private final TiketDB tiketDB;
     
     // Collections
-    private ObservableList<Jadwal> dataJadwal;
+    private final ObservableList<Jadwal> dataJadwal;
     private List<Jadwal> hasilPencarian;
-    private Map<Integer, Kursi> kursiMap;
+    private final Map<Integer, Kursi> kursiMap;
     
     private Jadwal jadwalDipilih;
     
-    @FXML
-    public void initialize() {
-        jadwalDB = new JadwalDB();
-        kursiDB = new KursiDB();
-        tiketDB = new TiketDB();
+    public AppController(Stage stage, String mode) {
+        this.stage = stage;
+        this.modeAktif = mode;
+        this.view = new MainAppView(stage);
         
-        dataJadwal = FXCollections.observableArrayList();
-        hasilPencarian = new ArrayList<>();
-        kursiMap = new HashMap<>();
+        // Initialize database
+        this.jadwalDB = new JadwalDB();
+        this.kursiDB = new KursiDB();
+        this.tiketDB = new TiketDB();
+        
+        // Initialize collections
+        this.dataJadwal = FXCollections.observableArrayList();
+        this.hasilPencarian = new ArrayList<>();
+        this.kursiMap = new HashMap<>();
+        
+        // Setup UI based on mode
+        setupMode();
     }
     
-    public void setMode(String mode) {
-        this.modeAktif = mode;
-        lblMode.setText("Mode: " + mode);
+    private void setupMode() {
+        view.getLblMode().setText("Mode: " + modeAktif);
         
-        if (mode.equals("ADMIN")) {
+        if (modeAktif.equals("ADMIN")) {
             showMenuAdmin();
             showPanelCRUDJadwal();
         } else {
@@ -80,6 +114,7 @@ public class AppController {
     // ================================================================
     
     private void showMenuAdmin() {
+        VBox sidebar = view.getSidebar();
         sidebar.getChildren().clear();
         
         Button btnCRUD = createMenuButton("CRUD Jadwal", "#339AF0");
@@ -89,8 +124,6 @@ public class AppController {
         btnKeluar.setOnAction(e -> handleKeluar());
         
         sidebar.getChildren().addAll(btnCRUD, btnKeluar);
-        sidebar.setSpacing(10);
-        sidebar.setPadding(new Insets(20));
     }
     
     private void showPanelCRUDJadwal() {
@@ -174,7 +207,6 @@ public class AppController {
     private void handleAddJadwal(TextField tfKode, TextField tfAsal, TextField tfTujuan, 
                                   TextField tfTanggal, TextField tfJam, TextField tfHarga, TableView<Jadwal> table) {
         try {
-            // Validasi
             if (tfKode.getText().isEmpty() || tfAsal.getText().isEmpty()) {
                 throw new ValidationException("Semua field harus diisi!");
             }
@@ -263,6 +295,7 @@ public class AppController {
     // ================================================================
     
     private void showMenuPelanggan() {
+        VBox sidebar = view.getSidebar();
         sidebar.getChildren().clear();
         
         Button btnCek = createMenuButton("Cek Jadwal", "#339AF0");
@@ -275,8 +308,6 @@ public class AppController {
         btnKeluar.setOnAction(e -> handleKeluar());
         
         sidebar.getChildren().addAll(btnCek, btnPesan, btnKeluar);
-        sidebar.setSpacing(10);
-        sidebar.setPadding(new Insets(20));
     }
     
     private void showPanelCekJadwal() {
@@ -497,22 +528,8 @@ public class AppController {
     }
     
     private void showStrukPopup(Tiket tiket) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/struk.fxml"));
-            Parent root = loader.load();
-            
-            StrukController controller = loader.getController();
-            controller.setTiket(tiket);
-            
-            Stage dialog = new Stage();
-            dialog.initModality(Modality.APPLICATION_MODAL);
-            dialog.setTitle("Struk Pemesanan");
-            dialog.setScene(new Scene(root));
-            dialog.showAndWait();
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        StrukController strukController = new StrukController(stage, tiket);
+        strukController.show();
     }
     
     // ================================================================
@@ -548,8 +565,8 @@ public class AppController {
     }
     
     private void switchPanel(javafx.scene.Node panel) {
-        panelKonten.getChildren().clear();
-        panelKonten.getChildren().add(panel);
+        view.getPanelKonten().getChildren().clear();
+        view.getPanelKonten().getChildren().add(panel);
     }
     
     private void clearForm(TextField... fields) {
@@ -564,19 +581,12 @@ public class AppController {
         alert.showAndWait();
     }
     
-    @FXML
     private void handleKeluar() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/pilih_mode.fxml"));
-            Parent root = loader.load();
-            
-            Stage stage = (Stage) sidebar.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Sistem Tiket Bus");
-            stage.centerOnScreen();
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        MainController mainController = new MainController(stage);
+        mainController.show();
+    }
+    
+    public void show() {
+        view.show();
     }
 }

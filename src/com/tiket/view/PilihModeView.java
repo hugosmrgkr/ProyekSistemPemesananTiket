@@ -4,116 +4,109 @@
  */
 package com.tiket.view;
 
-import javax.swing.*;
-import java.awt.*;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 /**
- * Halaman awal untuk memilih mode: Admin atau Pelanggan
+ * View untuk memilih mode: Admin atau Pelanggan
+ * Pure Java - Tanpa FXML
  */
-public class PilihModeView extends JFrame {
+public class PilihModeView {
     
-    public PilihModeView() {
-        setTitle("Sistem Pemesanan Tiket Bus");
-        setSize(500, 400);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        
-        initComponents();
-    }
-
-    PilihModeView(JFrame frameUtama) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    private Stage stage;
+    private VBox root;
+    private Button btnAdmin;
+    private Button btnPelanggan;
+    
+    public PilihModeView(Stage stage) {
+        this.stage = stage;
+        initializeUI();
     }
     
-    private void initComponents() {
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout());
-        mainPanel.setBackground(new Color(240, 240, 245));
+    private void initializeUI() {
+        // Root Container
+        root = new VBox(30);
+        root.setAlignment(Pos.CENTER);
+        root.setPadding(new Insets(50));
+        root.setStyle("-fx-background-color: linear-gradient(to bottom, #667eea 0%, #764ba2 100%);");
         
-        // Header
-        JPanel headerPanel = new JPanel();
-        headerPanel.setBackground(new Color(51, 154, 240));
-        headerPanel.setPreferredSize(new Dimension(500, 100));
+        // Title
+        Label lblTitle = new Label("SISTEM PEMESANAN TIKET BUS");
+        lblTitle.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;");
         
-        JLabel lblTitle = new JLabel("SISTEM PEMESANAN TIKET BUS");
-        lblTitle.setFont(new Font("Arial", Font.BOLD, 24));
-        lblTitle.setForeground(Color.WHITE);
-        headerPanel.add(lblTitle);
-        
-        // Center - Buttons
-        JPanel centerPanel = new JPanel();
-        centerPanel.setLayout(new GridBagLayout());
-        centerPanel.setBackground(new Color(240, 240, 245));
-        
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(15, 15, 15, 15);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        
-        JLabel lblPilih = new JLabel("Pilih Mode Akses:");
-        lblPilih.setFont(new Font("Arial", Font.PLAIN, 16));
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        centerPanel.add(lblPilih, gbc);
+        Label lblSubtitle = new Label("Pilih Mode Akses");
+        lblSubtitle.setStyle("-fx-font-size: 16px; -fx-text-fill: #E0E0E0;");
         
         // Button Admin
-        JButton btnAdmin = new JButton("🔐 ADMIN");
-        btnAdmin.setFont(new Font("Arial", Font.BOLD, 18));
-        btnAdmin.setPreferredSize(new Dimension(200, 60));
-        btnAdmin.setBackground(new Color(255, 107, 107));
-        btnAdmin.setForeground(Color.WHITE);
-        btnAdmin.setFocusPainted(false);
-        btnAdmin.setBorderPainted(false);
-        btnAdmin.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        btnAdmin.addActionListener(e -> openMainView("ADMIN"));
-        
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        centerPanel.add(btnAdmin, gbc);
+        btnAdmin = createStyledButton("🔐 ADMIN", "#339AF0");
+        btnAdmin.setPrefSize(250, 60);
         
         // Button Pelanggan
-        JButton btnPelanggan = new JButton("👤 PELANGGAN");
-        btnPelanggan.setFont(new Font("Arial", Font.BOLD, 18));
-        btnPelanggan.setPreferredSize(new Dimension(200, 60));
-        btnPelanggan.setBackground(new Color(81, 207, 102));
-        btnPelanggan.setForeground(Color.WHITE);
-        btnPelanggan.setFocusPainted(false);
-        btnPelanggan.setBorderPainted(false);
-        btnPelanggan.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnPelanggan = createStyledButton("👤 PELANGGAN", "#51CF66");
+        btnPelanggan.setPrefSize(250, 60);
         
-        btnPelanggan.addActionListener(e -> openMainView("PELANGGAN"));
-        
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.gridwidth = 2;
-        centerPanel.add(btnPelanggan, gbc);
-        
-        // Footer
-        JPanel footerPanel = new JPanel();
-        footerPanel.setBackground(new Color(240, 240, 245));
-        JLabel lblFooter = new JLabel("© 2024 Sistem Tiket Bus");
-        lblFooter.setFont(new Font("Arial", Font.PLAIN, 12));
-        lblFooter.setForeground(Color.GRAY);
-        footerPanel.add(lblFooter);
-        
-        mainPanel.add(headerPanel, BorderLayout.NORTH);
-        mainPanel.add(centerPanel, BorderLayout.CENTER);
-        mainPanel.add(footerPanel, BorderLayout.SOUTH);
-        
-        add(mainPanel);
+        // Add to root
+        root.getChildren().addAll(lblTitle, lblSubtitle, btnAdmin, btnPelanggan);
     }
     
-    private void openMainView(String mode) {
-        MainView mainView = new MainView(mode);
-        mainView.setVisible(true);
-        this.dispose();
+    private Button createStyledButton(String text, String color) {
+        Button btn = new Button(text);
+        btn.setStyle(
+            "-fx-background-color: " + color + ";" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 18px;" +
+            "-fx-font-weight: bold;" +
+            "-fx-background-radius: 10;" +
+            "-fx-cursor: hand;"
+        );
+        
+        // Hover effect
+        btn.setOnMouseEntered(e -> btn.setStyle(
+            "-fx-background-color: derive(" + color + ", -10%);" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 18px;" +
+            "-fx-font-weight: bold;" +
+            "-fx-background-radius: 10;" +
+            "-fx-cursor: hand;" +
+            "-fx-scale-x: 1.05;" +
+            "-fx-scale-y: 1.05;"
+        ));
+        
+        btn.setOnMouseExited(e -> btn.setStyle(
+            "-fx-background-color: " + color + ";" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 18px;" +
+            "-fx-font-weight: bold;" +
+            "-fx-background-radius: 10;" +
+            "-fx-cursor: hand;"
+        ));
+        
+        return btn;
     }
     
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new PilihModeView().setVisible(true);
-        });
+    public void show() {
+        Scene scene = new Scene(root, 600, 500);
+        stage.setScene(scene);
+        stage.setTitle("Sistem Tiket Bus - Pilih Mode");
+        stage.centerOnScreen();
+        stage.show();
+    }
+    
+    // Getters untuk Controller
+    public Button getBtnAdmin() {
+        return btnAdmin;
+    }
+    
+    public Button getBtnPelanggan() {
+        return btnPelanggan;
+    }
+    
+    public Stage getStage() {
+        return stage;
     }
 }
