@@ -4,11 +4,12 @@
  */
 package com.tiket.exception;
 
-/**
- * Exception ketika tiket tidak ditemukan
- */
-public class TiketNotFoundException extends Exception {
-    public TiketNotFoundException(String message) {
+public class TiketException extends Exception {
+    public TiketException(String message) {
         super(message);
+    }
+
+    public TiketException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

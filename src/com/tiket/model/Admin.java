@@ -4,72 +4,37 @@
  */
 package com.tiket.model;
 
-/**
- * Class Admin
- * Sesuai Class Diagram: Admin mengelola Jadwal
- * Menerapkan konsep: ENCAPSULATION
- */
 public class Admin {
-    
-    // ENCAPSULATION: private attributes
     private String idAdmin;
     private String username;
-    private String password; // Untuk login (opsional, bisa skip jika tidak ada fitur login)
-    
-    // Constructor default
+    private String password;
+
     public Admin() {}
-    
-    // Constructor dengan parameter
+
     public Admin(String idAdmin, String username, String password) {
         this.idAdmin = idAdmin;
         this.username = username;
         this.password = password;
     }
-    
-    // Getter & Setter
-    public String getIdAdmin() {
-        return idAdmin;
-    }
-    
-    public void setIdAdmin(String idAdmin) {
-        this.idAdmin = idAdmin;
-    }
-    
-    public String getUsername() {
-        return username;
-    }
-    
-    public void setUsername(String username) {
-        this.username = username;
-    }
-    
-    public String getPassword() {
-        return password;
-    }
-    
-    public void setPassword(String password) {
-        this.password = password;
-    }
-    
-    // Method untuk mengelola jadwal (sesuai diagram)
-    // Implementasi CRUD ada di JadwalDB, ini hanya method placeholder
+
+    public String getIdAdmin() { return idAdmin; }
+    public void setIdAdmin(String idAdmin) { this.idAdmin = idAdmin; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
     public void buatJadwal(Jadwal jadwal) {
-        // Implementation di controller/service layer
+        // Logika untuk membuat jadwal
     }
-    
+
     public void ubahJadwal(Jadwal jadwal) {
-        // Implementation di controller/service layer
+        // Logika untuk mengubah jadwal
     }
-    
-    public void hapusJadwal(String idJadwal) {
-        // Implementation di controller/service layer
-    }
-    
-    @Override
-    public String toString() {
-        return "Admin{" +
-                "idAdmin='" + idAdmin + '\'' +
-                ", username='" + username + '\'' +
-                '}';
+
+    public void hapusJadwal(String id) {
+        // Logika untuk menghapus jadwal
     }
 }

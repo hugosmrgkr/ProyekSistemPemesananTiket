@@ -4,97 +4,76 @@
  */
 package com.tiket.model;
 
-/**
- * Class Transaksi
- * Sesuai Class Diagram: Transaksi mencakup Tiket (1..*)
- * Menerapkan konsep: ENCAPSULATION
- */
+import java.util.ArrayList;
+import java.util.List;
+
 public class Transaksi {
-    
-    // ENCAPSULATION: private attributes
     private String idTransaksi;
-    private double jumlah;            // Total harga
-    private String metodePembayaran;  // Cash, Transfer, dll
-    private String status;             // LUNAS, PENDING
-    
-    // Relasi: Transaksi mencakup 1..* Tiket
-    private String idTiket;  // Foreign key (simplified: 1 transaksi untuk 1 tiket)
-    
-    // Constructor default
+    private double jumlah;
+    private String metodePembayaran;
+    private String status;
+    private boolean bayar;
+    private boolean refund;
+    private List<Tiket> tiketList;
+
     public Transaksi() {
+        this.tiketList = new ArrayList<>();
+        this.bayar = false;
+        this.refund = false;
         this.status = "PENDING";
     }
-    
-    // Constructor dengan parameter
-    public Transaksi(String idTransaksi, String idTiket, double jumlah, String metodePembayaran) {
+
+    public Transaksi(String idTransaksi, double jumlah, String metodePembayaran) {
         this.idTransaksi = idTransaksi;
-        this.idTiket = idTiket;
         this.jumlah = jumlah;
         this.metodePembayaran = metodePembayaran;
         this.status = "PENDING";
+        this.bayar = false;
+        this.refund = false;
+        this.tiketList = new ArrayList<>();
     }
-    
-    // Getter & Setter
-    public String getIdTransaksi() {
-        return idTransaksi;
+
+    public String getIdTransaksi() { return idTransaksi; }
+    public void setIdTransaksi(String idTransaksi) { this.idTransaksi = idTransaksi; }
+
+    public double getJumlah() { return jumlah; }
+    public void setJumlah(double jumlah) { this.jumlah = jumlah; }
+
+    public String getMetodePembayaran() { return metodePembayaran; }
+    public void setMetodePembayaran(String metodePembayaran) { this.metodePembayaran = metodePembayaran; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public boolean isBayar() { return bayar; }
+    public void setBayar(boolean bayar) { this.bayar = bayar; }
+
+    public boolean isRefund() { return refund; }
+    public void setRefund(boolean refund) { this.refund = refund; }
+
+    public List<Tiket> getTiketList() { return tiketList; }
+    public void setTiketList(List<Tiket> tiketList) { this.tiketList = tiketList; }
+
+    public void mencakupTiket(Tiket tiket) {
+        this.tiketList.add(tiket);
+        this.jumlah += tiket.getHarga();
     }
-    
-    public void setIdTransaksi(String idTransaksi) {
-        this.idTransaksi = idTransaksi;
+
+    public boolean bayarTransaksi() {
+        if (!bayar) {
+            this.bayar = true;
+            this.status = "LUNAS";
+            return true;
+        }
+        return false;
     }
-    
-    public String getIdTiket() {
-        return idTiket;
-    }
-    
-    public void setIdTiket(String idTiket) {
-        this.idTiket = idTiket;
-    }
-    
-    public double getJumlah() {
-        return jumlah;
-    }
-    
-    public void setJumlah(double jumlah) {
-        this.jumlah = jumlah;
-    }
-    
-    public String getMetodePembayaran() {
-        return metodePembayaran;
-    }
-    
-    public void setMetodePembayaran(String metodePembayaran) {
-        this.metodePembayaran = metodePembayaran;
-    }
-    
-    public String getStatus() {
-        return status;
-    }
-    
-    public void setStatus(String status) {
-        this.status = status;
-    }
-    
-    // Method sesuai diagram: bayar() dan refund()
-    public boolean bayar() {
-        // Set status ke LUNAS
-        this.status = "LUNAS";
-        return true;
-    }
-    
-    public boolean refund() {
-        // Set status ke REFUNDED
-        this.status = "REFUNDED";
-        return true;
-    }
-    
-    @Override
-    public String toString() {
-        return "Transaksi{" +
-                "idTransaksi='" + idTransaksi + '\'' +
-                ", jumlah=" + jumlah +
-                ", metodePembayaran='" + metodePembayaran + '\'' +
-                ", status='" + status + '\'' +
-                '}';
+
+    public boolean refundTransaksi() {
+        if (bayar && !refund) {
+            this.refund = true;
+            this.status = "REFUND";
+            return true;
+        }
+        return false;
     }
 }

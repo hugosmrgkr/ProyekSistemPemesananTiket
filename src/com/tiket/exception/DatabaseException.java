@@ -4,14 +4,11 @@
  */
 package com.tiket.exception;
 
-/**
- * Base exception untuk database operations
- */
-public class DatabaseException extends Exception {
+public class DatabaseException extends TiketException {
     public DatabaseException(String message) {
         super(message);
     }
-    
+
     public DatabaseException(String message, Throwable cause) {
         super(message, cause);
     }
