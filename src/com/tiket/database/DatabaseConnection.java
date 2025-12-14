@@ -1,73 +1,77 @@
 package com.tiket.database;
 
-import com.tiket.exception.DatabaseException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseConnection {
 
-    private static final String URL =
-        "jdbc:mysql://localhost:3307/db_pemesanan_tiket?useSSL=false&serverTimezone=UTC";
-    private static final String USER = "root";      // nanti kita ganti ke tiket_user
-    private static final String PASSWORD = "";      // sesuai kondisi sekarang
+    private static final String DB_URL =
+            "jdbc:mysql://localhost:3307/db_pemesanan_tiket?useSSL=false&serverTimezone=UTC";
+    private static final String DB_USERNAME = "root";
+    private static final String DB_PASSWORD = "";
 
     private static DatabaseConnection instance;
     private Connection connection;
 
-    private DatabaseConnection() throws DatabaseException {
+    // ================= CONSTRUCTOR =================
+    private DatabaseConnection() throws SQLException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            connection = DriverManager.getConnection(URL, USER, PASSWORD);
-        } catch (ClassNotFoundException | SQLException e) {
-            throw new DatabaseException("Koneksi database gagal: " + e.getMessage(), e);
+            connection = DriverManager.getConnection(
+                    DB_URL, DB_USERNAME, DB_PASSWORD
+            );
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("MySQL Driver tidak ditemukan", e);
         }
     }
 
-    public static DatabaseConnection getInstance() throws DatabaseException {
-        if (instance == null) {
+    // ================= SINGLETON =================
+    public static synchronized DatabaseConnection getInstance() throws SQLException {
+        if (instance == null || instance.connection == null || instance.connection.isClosed()) {
             instance = new DatabaseConnection();
         }
         return instance;
     }
 
-    public Connection getConnection() throws DatabaseException {
-        try {
-            if (connection == null || connection.isClosed()) {
-                connection = DriverManager.getConnection(URL, USER, PASSWORD);
-            }
-            return connection;
-        } catch (SQLException e) {
-            throw new DatabaseException("Gagal mendapatkan koneksi database", e);
+    // ================= GET CONNECTION =================
+    public Connection getConnection() throws SQLException {
+        if (connection == null || connection.isClosed()) {
+            connection = DriverManager.getConnection(
+                    DB_URL, DB_USERNAME, DB_PASSWORD
+            );
         }
+        return connection;
     }
 
+    // ================= CLOSE CONNECTION =================
     public void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {
                 connection.close();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Gagal menutup koneksi DB: " + e.getMessage());
         }
     }
 
-    // ================== METHOD TEST (INI YANG KITA JALANKAN) ==================
-    public static void testConnection() {
+    // ================= METHOD TEST =================
+    public static void main(String[] args) {
         try {
             DatabaseConnection db = DatabaseConnection.getInstance();
-            if (db.getConnection() != null) {
-                System.out.println("✅ KONEKSI DATABASE BERHASIL");
-            }
-        } catch (DatabaseException e) {
-            System.out.println("❌ KONEKSI DATABASE GAGAL");
-            System.out.println(e.getMessage());
-        }
-    }
+            Connection conn = db.getConnection();
 
-    // ================== MAIN KHUSUS TEST ==================
-    public static void main(String[] args) {
-        System.out.println("=== TEST KONEKSI DATABASE ===");
-        testConnection();
+            if (conn != null && !conn.isClosed()) {
+                System.out.println("✅ KONEKSI DATABASE BERHASIL!");
+                System.out.println("🔗 DB URL  : " + DB_URL);
+                System.out.println("👤 User   : " + DB_USERNAME);
+            } else {
+                System.out.println("❌ KONEKSI DATABASE GAGAL!");
+            }
+
+        } catch (SQLException e) {
+            System.out.println("❌ ERROR SAAT KONEKSI DATABASE");
+            e.printStackTrace();
+        }
     }
 }

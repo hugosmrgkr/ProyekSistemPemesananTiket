@@ -12,7 +12,7 @@ import java.util.List;
 public class JadwalDAO {
     private Connection connection;
 
-    public JadwalDAO() throws DatabaseException {
+    public JadwalDAO() throws DatabaseException, SQLException {
         this.connection = DatabaseConnection.getInstance().getConnection();
     }
 

@@ -10,7 +10,7 @@ import java.util.List;
 public class PelangganDAO {
     private Connection connection;
 
-    public PelangganDAO() throws DatabaseException {
+    public PelangganDAO() throws DatabaseException, SQLException {
         this.connection = DatabaseConnection.getInstance().getConnection();
     }
 
@@ -50,4 +50,18 @@ public class PelangganDAO {
         
         return null;
     }
+
+    // Tambahkan method ini di PelangganDAO.java
+
+public void linkPelangganToTiket(String idPelanggan, String idTiket) throws DatabaseException {
+    String sql = "INSERT INTO pelanggan_tiket (pelanggan_id, tiket_id) VALUES (?, ?)";
+    
+    try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        stmt.setString(1, idPelanggan);
+        stmt.setString(2, idTiket);
+        stmt.executeUpdate();
+    } catch (SQLException e) {
+        throw new DatabaseException("Gagal link pelanggan ke tiket: " + e.getMessage(), e);
+    }
+}
 }

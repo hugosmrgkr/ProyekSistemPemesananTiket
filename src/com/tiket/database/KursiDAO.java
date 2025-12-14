@@ -1,8 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-
 package com.tiket.database;
 
 import com.tiket.exception.DatabaseException;
@@ -15,40 +10,30 @@ import java.util.List;
 public class KursiDAO {
     private Connection connection;
 
-    public KursiDAO() throws DatabaseException {
+    public KursiDAO() throws DatabaseException, SQLException {
         this.connection = DatabaseConnection.getInstance().getConnection();
     }
 
-    public void tambahKursi(String idJadwal, Kursi kursi) throws DatabaseException {
-    String sql = "INSERT INTO kursi (id_jadwal, nomor_kursi, tersedia) VALUES (?, ?, ?)";
-
-    try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-        stmt.setString(1, idJadwal);
-        stmt.setInt(2, kursi.getNomorKursi());
-        stmt.setBoolean(3, true); // selalu true awal
-        stmt.executeUpdate();
-    } catch (SQLException e) {
-        throw new DatabaseException("Gagal menambah kursi", e);
-    }
-}
-
-
-    public void updateStatusKursi(
-        String idJadwal,
-        int nomorKursi,
-        boolean tersedia
-) throws DatabaseException {
-         String sql = """
-        UPDATE kursi
-        SET tersedia=?
-        WHERE id_jadwal=? AND nomor_kursi=?
-    """;
+    public void tambahKursi(Kursi kursi) throws DatabaseException {
+        String sql = "INSERT INTO kursi (id_tiket, nomor_kursi, tersedia) VALUES (?, ?, ?)";
         
-         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-        stmt.setBoolean(1, tersedia);
-        stmt.setString(2, idJadwal);
-        stmt.setInt(3, nomorKursi);
-        stmt.executeUpdate();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, kursi.getIdTiket());
+            stmt.setInt(2, kursi.getNomorKursi());
+            stmt.setBoolean(3, kursi.isTersedia());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new DatabaseException("Gagal menambah kursi: " + e.getMessage(), e);
+        }
+    }
+
+    public void updateStatusKursi(String idTiket, boolean tersedia) throws DatabaseException {
+        String sql = "UPDATE kursi SET tersedia=? WHERE id_tiket=?";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setBoolean(1, tersedia);
+            stmt.setString(2, idTiket);
+            stmt.executeUpdate();
         } catch (SQLException e) {
             throw new DatabaseException("Gagal update status kursi: " + e.getMessage(), e);
         }
@@ -97,4 +82,72 @@ public class KursiDAO {
         
         return null;
     }
+    
+    // Method baru untuk mendapatkan kursi berdasarkan jadwal dan nomor
+    public Kursi getKursiByJadwalAndNomor(String idJadwal, int nomorKursi) throws DatabaseException {
+        // Format: KRS-JDW-XXX-NN
+        String idKursi = "KRS-" + idJadwal + "-" + String.format("%02d", nomorKursi);
+        return getKursiById(idKursi);
+    }
+    
+    // Method baru untuk mendapatkan kursi tersedia berdasarkan jadwal
+    public List<Kursi> getKursiTersediaByJadwal(String idJadwal) throws DatabaseException {
+        List<Kursi> kursiList = new ArrayList<>();
+        String sql = "SELECT * FROM kursi WHERE id_tiket LIKE ? AND tersedia=true";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, "KRS-" + idJadwal + "-%");
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                Kursi kursi = new Kursi();
+                kursi.setIdTiket(rs.getString("id_tiket"));
+                kursi.setNomorKursi(rs.getInt("nomor_kursi"));
+                kursi.setTersedia(rs.getBoolean("tersedia"));
+                
+                kursiList.add(kursi);
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Gagal mengambil kursi tersedia: " + e.getMessage(), e);
+        }
+        
+        return kursiList;
+    }
+    
+    // Method baru untuk mendapatkan semua kursi berdasarkan jadwal
+    public List<Kursi> getAllKursiByJadwal(String idJadwal) throws DatabaseException {
+        List<Kursi> kursiList = new ArrayList<>();
+        String sql = "SELECT * FROM kursi WHERE id_tiket LIKE ? ORDER BY nomor_kursi";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, "KRS-" + idJadwal + "-%");
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                Kursi kursi = new Kursi();
+                kursi.setIdTiket(rs.getString("id_tiket"));
+                kursi.setNomorKursi(rs.getInt("nomor_kursi"));
+                kursi.setTersedia(rs.getBoolean("tersedia"));
+                
+                kursiList.add(kursi);
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Gagal mengambil semua kursi: " + e.getMessage(), e);
+        }
+        
+        return kursiList;
+    }
+
+    // Tambahkan method ini di KursiDAO.java
+
+public void hapusKursi(String idTiket) throws DatabaseException {
+    String sql = "DELETE FROM kursi WHERE id_tiket=?";
+    
+    try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        stmt.setString(1, idTiket);
+        stmt.executeUpdate();
+    } catch (SQLException e) {
+        throw new DatabaseException("Gagal hapus kursi: " + e.getMessage(), e);
+    }
+}
 }

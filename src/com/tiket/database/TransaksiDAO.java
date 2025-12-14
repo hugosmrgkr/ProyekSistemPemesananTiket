@@ -10,7 +10,7 @@ import java.util.List;
 public class TransaksiDAO {
     private Connection connection;
 
-    public TransaksiDAO() throws DatabaseException {
+    public TransaksiDAO() throws DatabaseException, SQLException {
         this.connection = DatabaseConnection.getInstance().getConnection();
     }
 
@@ -95,4 +95,18 @@ public class TransaksiDAO {
         
         return transaksiList;
     }
+
+    // Tambahkan method ini di TransaksiDAO.java
+
+public void linkTransaksiToTiket(String idTransaksi, String idTiket) throws DatabaseException {
+    String sql = "INSERT INTO transaksi_tiket (transaksi_id, tiket_id) VALUES (?, ?)";
+    
+    try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        stmt.setString(1, idTransaksi);
+        stmt.setString(2, idTiket);
+        stmt.executeUpdate();
+    } catch (SQLException e) {
+        throw new DatabaseException("Gagal link transaksi ke tiket: " + e.getMessage(), e);
+    }
+}
 }

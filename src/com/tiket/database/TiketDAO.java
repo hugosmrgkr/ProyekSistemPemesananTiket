@@ -11,7 +11,7 @@ import java.util.List;
 public class TiketDAO {
     private Connection connection;
 
-    public TiketDAO() throws DatabaseException {
+    public TiketDAO() throws DatabaseException, SQLException {
         this.connection = DatabaseConnection.getInstance().getConnection();
     }
 
@@ -74,4 +74,33 @@ public class TiketDAO {
         
         return tiketList;
     }
+
+public void linkTiketToJadwal(String idTiket, String idJadwal) throws DatabaseException {
+    String sql = "INSERT INTO tiket_jadwal (tiket_id, jadwal_id) VALUES (?, ?)";
+    
+    try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        stmt.setString(1, idTiket);
+        stmt.setString(2, idJadwal);
+        stmt.executeUpdate();
+    } catch (SQLException e) {
+        throw new DatabaseException("Gagal link tiket ke jadwal: " + e.getMessage(), e);
+    }
+}
+
+public String getJadwalIdByTiket(String idTiket) throws DatabaseException {
+    String sql = "SELECT jadwal_id FROM tiket_jadwal WHERE tiket_id=?";
+    
+    try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        stmt.setString(1, idTiket);
+        ResultSet rs = stmt.executeQuery();
+        
+        if (rs.next()) {
+            return rs.getString("jadwal_id");
+        }
+    } catch (SQLException e) {
+        throw new DatabaseException("Gagal get jadwal id: " + e.getMessage(), e);
+    }
+    
+    return null;
+}
 }
