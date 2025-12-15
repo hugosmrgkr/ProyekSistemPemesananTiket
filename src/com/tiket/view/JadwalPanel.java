@@ -8,6 +8,7 @@ import com.tiket.helper.Helper;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.util.List;
 
@@ -21,38 +22,73 @@ public class JadwalPanel extends JPanel {
     public JadwalPanel(JadwalController controller) {
         this.jadwalController = controller;
         setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        setBackground(new Color(245, 247, 250));
         initUI();
         loadData();
     }
     
     private void initUI() {
         // Panel Header
-        JPanel headerPanel = new JPanel(new BorderLayout());
+        JPanel headerPanel = new JPanel(new BorderLayout(10, 10));
+        headerPanel.setBackground(new Color(245, 247, 250));
+        
         JLabel lblTitle = new JLabel("KELOLA JADWAL BUS", SwingConstants.CENTER);
-        lblTitle.setFont(new Font("Arial", Font.BOLD, 18));
-        lblTitle.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lblTitle.setForeground(new Color(44, 62, 80));
+        lblTitle.setBorder(BorderFactory.createEmptyBorder(15, 0, 15, 0));
         headerPanel.add(lblTitle, BorderLayout.NORTH);
         
-        // Panel Pencarian
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        searchPanel.add(new JLabel("Asal:"));
+        // Panel Pencarian dengan border dan background
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        searchPanel.setBackground(Color.WHITE);
+        searchPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(220, 225, 230), 1),
+            BorderFactory.createEmptyBorder(10, 15, 10, 15)
+        ));
+        
+        JLabel lblAsal = new JLabel("Asal:");
+        lblAsal.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblAsal.setForeground(new Color(52, 73, 94));
+        searchPanel.add(lblAsal);
+        
         txtCariAsal = new JTextField(15);
+        txtCariAsal.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        txtCariAsal.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
+            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
         searchPanel.add(txtCariAsal);
         
-        searchPanel.add(new JLabel("Tujuan:"));
+        JLabel lblTujuan = new JLabel("Tujuan:");
+        lblTujuan.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblTujuan.setForeground(new Color(52, 73, 94));
+        searchPanel.add(lblTujuan);
+        
         txtCariTujuan = new JTextField(15);
+        txtCariTujuan.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        txtCariTujuan.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
+            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
         searchPanel.add(txtCariTujuan);
         
         btnCari = new JButton("Cari");
+        btnCari.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnCari.setBackground(new Color(52, 152, 219));
         btnCari.setForeground(Color.WHITE);
+        btnCari.setFocusPainted(false);
+        btnCari.setBorderPainted(false);
+        btnCari.setOpaque(true);
+        btnCari.setContentAreaFilled(true);
+        btnCari.setPreferredSize(new Dimension(80, 32));
+        btnCari.setCursor(new Cursor(Cursor.HAND_CURSOR));
         searchPanel.add(btnCari);
         
         headerPanel.add(searchPanel, BorderLayout.CENTER);
         add(headerPanel, BorderLayout.NORTH);
         
-        // Table Panel
+        // Table Panel dengan styling
         String[] columns = {"ID Jadwal", "Asal", "Tujuan", "Berangkat", "Tiba", "Durasi", "Harga"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
@@ -63,28 +99,71 @@ public class JadwalPanel extends JPanel {
         
         tableJadwal = new JTable(tableModel);
         tableJadwal.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tableJadwal.setRowHeight(25);
+        tableJadwal.setRowHeight(30);
+        tableJadwal.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        tableJadwal.setSelectionBackground(new Color(232, 240, 254));
+        tableJadwal.setSelectionForeground(new Color(44, 62, 80));
+        tableJadwal.setGridColor(new Color(220, 225, 230));
+        tableJadwal.setShowVerticalLines(true);
+        tableJadwal.setShowHorizontalLines(true);
+        tableJadwal.setBackground(Color.WHITE);
         tableJadwal.getTableHeader().setReorderingAllowed(false);
+        
+        // Custom Header Renderer - Fixed color issue
+        DefaultTableCellRenderer headerRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = (JLabel) super.getTableCellRendererComponent(
+                    table, value, isSelected, hasFocus, row, column);
+                label.setBackground(new Color(41, 128, 185));
+                label.setForeground(Color.WHITE);
+                label.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                label.setHorizontalAlignment(SwingConstants.CENTER);
+                label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+                label.setOpaque(true);
+                return label;
+            }
+        };
+        
+        // Apply custom renderer to all columns
+        for (int i = 0; i < tableJadwal.getColumnModel().getColumnCount(); i++) {
+            tableJadwal.getColumnModel().getColumn(i).setHeaderRenderer(headerRenderer);
+        }
+        
+        tableJadwal.getTableHeader().setPreferredSize(new Dimension(0, 35));
+        tableJadwal.getTableHeader().setBackground(new Color(41, 128, 185));
+        tableJadwal.getTableHeader().setForeground(Color.WHITE);
+        
+        // Center align cells
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        for (int i = 0; i < tableJadwal.getColumnCount(); i++) {
+            tableJadwal.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
         
         // Set column widths
         tableJadwal.getColumnModel().getColumn(0).setPreferredWidth(100);
         tableJadwal.getColumnModel().getColumn(1).setPreferredWidth(120);
         tableJadwal.getColumnModel().getColumn(2).setPreferredWidth(120);
-        tableJadwal.getColumnModel().getColumn(3).setPreferredWidth(130);
-        tableJadwal.getColumnModel().getColumn(4).setPreferredWidth(130);
+        tableJadwal.getColumnModel().getColumn(3).setPreferredWidth(140);
+        tableJadwal.getColumnModel().getColumn(4).setPreferredWidth(140);
         tableJadwal.getColumnModel().getColumn(5).setPreferredWidth(100);
         tableJadwal.getColumnModel().getColumn(6).setPreferredWidth(100);
         
         JScrollPane scrollPane = new JScrollPane(tableJadwal);
+        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(220, 225, 230), 1));
+        scrollPane.getViewport().setBackground(Color.WHITE);
         add(scrollPane, BorderLayout.CENTER);
         
-        // Button Panel
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        // Button Panel dengan spacing yang lebih baik
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 15));
+        buttonPanel.setBackground(new Color(245, 247, 250));
         
-        btnTambah = createButton("Tambah", new Color(46, 204, 113));
-        btnEdit = createButton("Edit", new Color(241, 196, 15));
-        btnHapus = createButton("Hapus", new Color(231, 76, 60));
-        btnRefresh = createButton("Refresh", new Color(149, 165, 166));
+        btnTambah = createStyledButton("Tambah", new Color(46, 204, 113));
+        btnEdit = createStyledButton("Edit", new Color(241, 196, 15));
+        btnHapus = createStyledButton("Hapus", new Color(231, 76, 60));
+        btnRefresh = createStyledButton("Refresh", new Color(149, 165, 166));
         
         buttonPanel.add(btnTambah);
         buttonPanel.add(btnEdit);
@@ -110,52 +189,55 @@ public class JadwalPanel extends JPanel {
         });
     }
     
-    private JButton createButton(String text, Color bgColor) {
+    private JButton createStyledButton(String text, Color bgColor) {
         JButton button = new JButton(text);
-        button.setPreferredSize(new Dimension(100, 35));
+        button.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        button.setPreferredSize(new Dimension(120, 38));
         button.setBackground(bgColor);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
-        button.setFont(new Font("Arial", Font.BOLD, 12));
+        button.setBorderPainted(false);
+        button.setOpaque(true);
+        button.setContentAreaFilled(true);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return button;
     }
     
     public void loadData() {
-    tableModel.setRowCount(0);
-    
-    try {
-        List<Jadwal> jadwalList = jadwalController.getAllJadwal();
+        tableModel.setRowCount(0);
         
-        for (Jadwal jadwal : jadwalList) {
-            // Dapatkan jumlah kursi tersedia
-            int kursiTersedia = jadwalController.getJumlahKursiTersedia(jadwal.getIdJadwal());
+        try {
+            List<Jadwal> jadwalList = jadwalController.getAllJadwal();
             
-            Object[] row = {
-                jadwal.getIdJadwal(),
-                jadwal.getLokasiAsal(),
-                jadwal.getLokasiTujuan(),
-                Helper.formatForDisplay(jadwal.getWaktuBerangkat()),
-                Helper.formatForDisplay(jadwal.getWaktuTiba()),
-                Helper.getDurationText(jadwal.getWaktuBerangkat(), jadwal.getWaktuTiba()),
-                Helper.formatRupiahWithoutDecimal(jadwal.getHarga())
-            };
-            tableModel.addRow(row);
+            for (Jadwal jadwal : jadwalList) {
+                int kursiTersedia = jadwalController.getJumlahKursiTersedia(jadwal.getIdJadwal());
+                
+                Object[] row = {
+                    jadwal.getIdJadwal(),
+                    jadwal.getLokasiAsal(),
+                    jadwal.getLokasiTujuan(),
+                    Helper.formatForDisplay(jadwal.getWaktuBerangkat()),
+                    Helper.formatForDisplay(jadwal.getWaktuTiba()),
+                    Helper.getDurationText(jadwal.getWaktuBerangkat(), jadwal.getWaktuTiba()),
+                    Helper.formatRupiahWithoutDecimal(jadwal.getHarga())
+                };
+                tableModel.addRow(row);
+            }
+            
+            if (jadwalList.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                    "Belum ada data jadwal",
+                    "Info",
+                    JOptionPane.INFORMATION_MESSAGE);
+            }
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                "Gagal memuat data!\n" + e.getMessage(),
+                "Error",
+                JOptionPane.ERROR_MESSAGE);
         }
-        
-        if (jadwalList.isEmpty()) {
-    JOptionPane.showMessageDialog(this,
-        "Belum ada data jadwal",
-        "Info",
-        JOptionPane.INFORMATION_MESSAGE);
-}
-
-} catch (Exception e) {
-    JOptionPane.showMessageDialog(this,
-        "Gagal memuat data!\n" + e.getMessage(),
-        "Error",
-        JOptionPane.ERROR_MESSAGE);
-}
-}
+    }
     
     private void tambahJadwal() {
         JadwalForm form = new JadwalForm(jadwalController);

@@ -4,7 +4,6 @@ import com.tiket.exception.DatabaseException;
 import com.tiket.model.Tiket;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,92 +14,84 @@ public class TiketDAO {
         this.connection = DatabaseConnection.getInstance().getConnection();
     }
 
+    // =========================
+    // TAMBAH TIKET
+    // =========================
     public void tambahTiket(Tiket tiket) throws DatabaseException {
-        String sql = "INSERT INTO tiket (id_tiket, nomor_kursi, harga, waktu_struck) VALUES (?, ?, ?, ?)";
-        
+        String sql = """
+            INSERT INTO tiket 
+            (id_tiket, id_jadwal, id_kursi, nomor_kursi, harga, waktu_struk)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """;
+
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, tiket.getIdTiket());
-            stmt.setInt(2, tiket.getNomorKursi());
-            stmt.setDouble(3, tiket.getHarga());
-            stmt.setTimestamp(4, Timestamp.valueOf(tiket.getWaktuStruck()));
+            stmt.setString(2, tiket.getIdJadwal());
+            stmt.setString(3, tiket.getIdKursi());   // ✅ FIX UTAMA
+            stmt.setInt(4, tiket.getNomorKursi());
+            stmt.setDouble(5, tiket.getHarga());
+            stmt.setTimestamp(6, Timestamp.valueOf(tiket.getWaktuStruk()));
             stmt.executeUpdate();
         } catch (SQLException e) {
             throw new DatabaseException("Gagal menambah tiket: " + e.getMessage(), e);
         }
     }
 
+    // =========================
+    // GET TIKET BY ID
+    // =========================
     public Tiket getTiketById(String idTiket) throws DatabaseException {
         String sql = "SELECT * FROM tiket WHERE id_tiket=?";
-        
+
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, idTiket);
             ResultSet rs = stmt.executeQuery();
-            
+
             if (rs.next()) {
                 Tiket tiket = new Tiket();
                 tiket.setIdTiket(rs.getString("id_tiket"));
+                tiket.setIdJadwal(rs.getString("id_jadwal"));
+                tiket.setIdKursi(rs.getString("id_kursi")); // ✅
                 tiket.setNomorKursi(rs.getInt("nomor_kursi"));
                 tiket.setHarga(rs.getDouble("harga"));
-                tiket.setWaktuStruck(rs.getTimestamp("waktu_struck").toLocalDateTime());
-                
+                tiket.setWaktuStruk(
+                        rs.getTimestamp("waktu_struk").toLocalDateTime()
+                );
                 return tiket;
             }
         } catch (SQLException e) {
             throw new DatabaseException("Gagal mengambil tiket: " + e.getMessage(), e);
         }
-        
+
         return null;
     }
 
+    // =========================
+    // GET SEMUA TIKET
+    // =========================
     public List<Tiket> getAllTiket() throws DatabaseException {
         List<Tiket> tiketList = new ArrayList<>();
         String sql = "SELECT * FROM tiket";
-        
+
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-            
+
             while (rs.next()) {
                 Tiket tiket = new Tiket();
                 tiket.setIdTiket(rs.getString("id_tiket"));
+                tiket.setIdJadwal(rs.getString("id_jadwal"));
+                tiket.setIdKursi(rs.getString("id_kursi")); // ✅
                 tiket.setNomorKursi(rs.getInt("nomor_kursi"));
                 tiket.setHarga(rs.getDouble("harga"));
-                tiket.setWaktuStruck(rs.getTimestamp("waktu_struck").toLocalDateTime());
-                
+                tiket.setWaktuStruk(
+                        rs.getTimestamp("waktu_struk").toLocalDateTime()
+                );
                 tiketList.add(tiket);
             }
         } catch (SQLException e) {
             throw new DatabaseException("Gagal mengambil semua tiket: " + e.getMessage(), e);
         }
-        
+
         return tiketList;
     }
-
-public void linkTiketToJadwal(String idTiket, String idJadwal) throws DatabaseException {
-    String sql = "INSERT INTO tiket_jadwal (tiket_id, jadwal_id) VALUES (?, ?)";
-    
-    try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-        stmt.setString(1, idTiket);
-        stmt.setString(2, idJadwal);
-        stmt.executeUpdate();
-    } catch (SQLException e) {
-        throw new DatabaseException("Gagal link tiket ke jadwal: " + e.getMessage(), e);
-    }
-}
-
-public String getJadwalIdByTiket(String idTiket) throws DatabaseException {
-    String sql = "SELECT jadwal_id FROM tiket_jadwal WHERE tiket_id=?";
-    
-    try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-        stmt.setString(1, idTiket);
-        ResultSet rs = stmt.executeQuery();
-        
-        if (rs.next()) {
-            return rs.getString("jadwal_id");
-        }
-    } catch (SQLException e) {
-        throw new DatabaseException("Gagal get jadwal id: " + e.getMessage(), e);
-    }
-    
-    return null;
-}
 }

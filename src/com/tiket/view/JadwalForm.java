@@ -4,7 +4,6 @@ import com.tiket.controller.JadwalController;
 import com.tiket.exception.DatabaseException;
 import com.tiket.exception.JadwalNotFoundException;
 import com.tiket.model.Jadwal;
-import com.tiket.model.Kursi;
 import com.tiket.helper.Helper;
 
 import javax.swing.*;
@@ -15,30 +14,33 @@ import java.time.format.DateTimeParseException;
 
 public class JadwalForm extends JFrame {
     private JadwalController jadwalController;
-    private JTextField txtAsal, txtTujuan, txtBerangkat, txtTiba, txtHarga;
+    private JTextField txtAsal, txtTujuan, txtHarga;
+    
+    // Components for DateTime picker
+    private JSpinner spnBerangkatTanggal, spnBerangkatJam, spnBerangkatMenit;
+    private JSpinner spnTibaTanggal, spnTibaJam, spnTibaMenit;
+    
     private JButton btnSimpan, btnBatal;
     
-    private String mode; // "tambah" atau "edit"
-    private String idJadwal; // untuk mode edit
+    private String mode;
+    private String idJadwal;
     
-    // Constructor untuk mode tambah
     public JadwalForm(JadwalController controller) {
         this.jadwalController = controller;
         this.mode = "tambah";
         setTitle("Tambah Jadwal");
-        setSize(450, 400);
+        setSize(520, 550);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         initUI();
     }
     
-    // Constructor untuk mode edit
     public JadwalForm(JadwalController controller, Jadwal jadwal) {
         this.jadwalController = controller;
         this.mode = "edit";
         this.idJadwal = jadwal.getIdJadwal();
         setTitle("Edit Jadwal - " + idJadwal);
-        setSize(450, 400);
+        setSize(520, 550);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         initUI();
@@ -46,88 +48,107 @@ public class JadwalForm extends JFrame {
     }
     
     private void initUI() {
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        JPanel mainPanel = new JPanel(new BorderLayout(15, 15));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        mainPanel.setBackground(new Color(245, 247, 250));
         
         // Header
         JLabel lblTitle = new JLabel(
             mode.equals("tambah") ? "FORM TAMBAH JADWAL" : "FORM EDIT JADWAL",
             SwingConstants.CENTER
         );
-        lblTitle.setFont(new Font("Arial", Font.BOLD, 16));
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblTitle.setForeground(new Color(44, 62, 80));
         lblTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         mainPanel.add(lblTitle, BorderLayout.NORTH);
         
         // Form Panel
-        JPanel formPanel = new JPanel(new GridLayout(5, 2, 10, 10));
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBackground(Color.WHITE);
+        formPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(220, 225, 230), 1),
+            BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
         
-        formPanel.add(new JLabel("Lokasi Asal:"));
-        txtAsal = new JTextField();
-        formPanel.add(txtAsal);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(8, 5, 8, 5);
         
-        formPanel.add(new JLabel("Lokasi Tujuan:"));
-        txtTujuan = new JTextField();
-        formPanel.add(txtTujuan);
+        int row = 0;
         
-        formPanel.add(new JLabel("Waktu Berangkat:"));
-        txtBerangkat = new JTextField("yyyy-MM-dd HH:mm");
-        txtBerangkat.setForeground(Color.GRAY);
-        txtBerangkat.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent e) {
-                if (txtBerangkat.getText().equals("yyyy-MM-dd HH:mm")) {
-                    txtBerangkat.setText("");
-                    txtBerangkat.setForeground(Color.BLACK);
-                }
-            }
-            public void focusLost(java.awt.event.FocusEvent e) {
-                if (txtBerangkat.getText().isEmpty()) {
-                    txtBerangkat.setText("yyyy-MM-dd HH:mm");
-                    txtBerangkat.setForeground(Color.GRAY);
-                }
-            }
-        });
-        formPanel.add(txtBerangkat);
+        // Lokasi Asal
+        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
+        formPanel.add(createLabel("Lokasi Asal:"), gbc);
+        gbc.gridx = 1; gbc.weightx = 1;
+        txtAsal = createTextField();
+        formPanel.add(txtAsal, gbc);
+        row++;
         
-        formPanel.add(new JLabel("Waktu Tiba:"));
-        txtTiba = new JTextField("yyyy-MM-dd HH:mm");
-        txtTiba.setForeground(Color.GRAY);
-        txtTiba.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent e) {
-                if (txtTiba.getText().equals("yyyy-MM-dd HH:mm")) {
-                    txtTiba.setText("");
-                    txtTiba.setForeground(Color.BLACK);
-                }
-            }
-            public void focusLost(java.awt.event.FocusEvent e) {
-                if (txtTiba.getText().isEmpty()) {
-                    txtTiba.setText("yyyy-MM-dd HH:mm");
-                    txtTiba.setForeground(Color.GRAY);
-                }
-            }
-        });
-        formPanel.add(txtTiba);
+        // Lokasi Tujuan
+        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
+        formPanel.add(createLabel("Lokasi Tujuan:"), gbc);
+        gbc.gridx = 1; gbc.weightx = 1;
+        txtTujuan = createTextField();
+        formPanel.add(txtTujuan, gbc);
+        row++;
         
-        formPanel.add(new JLabel("Harga (Rp):"));
-        txtHarga = new JTextField();
-        formPanel.add(txtHarga);
+        // Waktu Berangkat Label
+        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
+        formPanel.add(createLabel("Waktu Berangkat:"), gbc);
+        row++;
+        
+        // Waktu Berangkat Input
+        gbc.gridx = 0; gbc.gridy = row; gbc.gridwidth = 2;
+        JPanel berangkatPanel = createDateTimePanel(true);
+        formPanel.add(berangkatPanel, gbc);
+        row++;
+        
+        // Waktu Tiba Label
+        gbc.gridx = 0; gbc.gridy = row; gbc.gridwidth = 1; gbc.weightx = 0;
+        formPanel.add(createLabel("Waktu Tiba:"), gbc);
+        row++;
+        
+        // Waktu Tiba Input
+        gbc.gridx = 0; gbc.gridy = row; gbc.gridwidth = 2;
+        JPanel tibaPanel = createDateTimePanel(false);
+        formPanel.add(tibaPanel, gbc);
+        row++;
+        
+        // Harga
+        gbc.gridx = 0; gbc.gridy = row; gbc.gridwidth = 1; gbc.weightx = 0;
+        formPanel.add(createLabel("Harga (Rp):"), gbc);
+        gbc.gridx = 1; gbc.weightx = 1;
+        txtHarga = createTextField();
+        formPanel.add(txtHarga, gbc);
         
         mainPanel.add(formPanel, BorderLayout.CENTER);
         
         // Button Panel
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 0));
+        buttonPanel.setBackground(new Color(245, 247, 250));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
         
         btnSimpan = new JButton(mode.equals("tambah") ? "Simpan" : "Update");
-        btnSimpan.setPreferredSize(new Dimension(100, 30));
+        btnSimpan.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnSimpan.setPreferredSize(new Dimension(130, 38));
         btnSimpan.setBackground(new Color(46, 204, 113));
         btnSimpan.setForeground(Color.WHITE);
         btnSimpan.setFocusPainted(false);
+        btnSimpan.setBorderPainted(false);
+        btnSimpan.setOpaque(true);
+        btnSimpan.setContentAreaFilled(true);
+        btnSimpan.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         btnBatal = new JButton("Batal");
-        btnBatal.setPreferredSize(new Dimension(100, 30));
+        btnBatal.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnBatal.setPreferredSize(new Dimension(130, 38));
         btnBatal.setBackground(new Color(231, 76, 60));
         btnBatal.setForeground(Color.WHITE);
         btnBatal.setFocusPainted(false);
+        btnBatal.setBorderPainted(false);
+        btnBatal.setOpaque(true);
+        btnBatal.setContentAreaFilled(true);
+        btnBatal.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         buttonPanel.add(btnSimpan);
         buttonPanel.add(btnBatal);
@@ -148,22 +169,119 @@ public class JadwalForm extends JFrame {
         btnBatal.addActionListener(e -> dispose());
     }
     
+    private JLabel createLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        label.setForeground(new Color(52, 73, 94));
+        return label;
+    }
+    
+    private JTextField createTextField() {
+        JTextField textField = new JTextField();
+        textField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        textField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
+            BorderFactory.createEmptyBorder(6, 8, 6, 8)
+        ));
+        return textField;
+    }
+    
+    private JPanel createDateTimePanel(boolean isBerangkat) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 5));
+        panel.setBackground(Color.WHITE);
+        
+        // Date Spinner
+        SpinnerDateModel dateModel = new SpinnerDateModel();
+        JSpinner dateSpinner = new JSpinner(dateModel);
+        JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(dateSpinner, "dd/MM/yyyy");
+        dateSpinner.setEditor(dateEditor);
+        dateSpinner.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        dateSpinner.setPreferredSize(new Dimension(120, 32));
+        ((JSpinner.DefaultEditor) dateSpinner.getEditor()).getTextField().setEditable(false);
+        
+        // Hour Spinner
+        SpinnerNumberModel hourModel = new SpinnerNumberModel(8, 0, 23, 1);
+        JSpinner hourSpinner = new JSpinner(hourModel);
+        hourSpinner.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        hourSpinner.setPreferredSize(new Dimension(60, 32));
+        ((JSpinner.DefaultEditor) hourSpinner.getEditor()).getTextField().setHorizontalAlignment(JTextField.CENTER);
+        
+        // Minute Spinner
+        SpinnerNumberModel minuteModel = new SpinnerNumberModel(0, 0, 59, 15);
+        JSpinner minuteSpinner = new JSpinner(minuteModel);
+        minuteSpinner.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        minuteSpinner.setPreferredSize(new Dimension(60, 32));
+        ((JSpinner.DefaultEditor) minuteSpinner.getEditor()).getTextField().setHorizontalAlignment(JTextField.CENTER);
+        
+        // Store references
+        if (isBerangkat) {
+            spnBerangkatTanggal = dateSpinner;
+            spnBerangkatJam = hourSpinner;
+            spnBerangkatMenit = minuteSpinner;
+        } else {
+            spnTibaTanggal = dateSpinner;
+            spnTibaJam = hourSpinner;
+            spnTibaMenit = minuteSpinner;
+        }
+        
+        // Labels
+        JLabel lblDate = new JLabel("Tanggal:");
+        lblDate.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        JLabel lblTime = new JLabel("Jam:");
+        lblTime.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        JLabel lblColon = new JLabel(":");
+        lblColon.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        
+        panel.add(lblDate);
+        panel.add(dateSpinner);
+        panel.add(lblTime);
+        panel.add(hourSpinner);
+        panel.add(lblColon);
+        panel.add(minuteSpinner);
+        
+        return panel;
+    }
+    
+    private LocalDateTime getDateTimeFromSpinners(JSpinner dateSpinner, JSpinner hourSpinner, JSpinner minuteSpinner) {
+        java.util.Date date = (java.util.Date) dateSpinner.getValue();
+        int hour = (Integer) hourSpinner.getValue();
+        int minute = (Integer) minuteSpinner.getValue();
+        
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(java.util.Calendar.HOUR_OF_DAY, hour);
+        cal.set(java.util.Calendar.MINUTE, minute);
+        cal.set(java.util.Calendar.SECOND, 0);
+        
+        return LocalDateTime.of(
+            cal.get(java.util.Calendar.YEAR),
+            cal.get(java.util.Calendar.MONTH) + 1,
+            cal.get(java.util.Calendar.DAY_OF_MONTH),
+            hour,
+            minute
+        );
+    }
+    
+    private void setSpinnersFromDateTime(LocalDateTime dateTime, JSpinner dateSpinner, JSpinner hourSpinner, JSpinner minuteSpinner) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.set(dateTime.getYear(), dateTime.getMonthValue() - 1, dateTime.getDayOfMonth());
+        
+        dateSpinner.setValue(cal.getTime());
+        hourSpinner.setValue(dateTime.getHour());
+        minuteSpinner.setValue(dateTime.getMinute());
+    }
+    
     private void loadData(Jadwal jadwal) {
         txtAsal.setText(jadwal.getLokasiAsal());
         txtTujuan.setText(jadwal.getLokasiTujuan());
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        txtBerangkat.setText(jadwal.getWaktuBerangkat().format(formatter));
-        txtBerangkat.setForeground(Color.BLACK);
-        
-        txtTiba.setText(jadwal.getWaktuTiba().format(formatter));
-        txtTiba.setForeground(Color.BLACK);
+        setSpinnersFromDateTime(jadwal.getWaktuBerangkat(), spnBerangkatTanggal, spnBerangkatJam, spnBerangkatMenit);
+        setSpinnersFromDateTime(jadwal.getWaktuTiba(), spnTibaTanggal, spnTibaJam, spnTibaMenit);
         
         txtHarga.setText(String.valueOf(jadwal.getHarga()));
     }
     
     private boolean validateInput() {
-        // Validasi lokasi asal
         if (!Helper.isNotEmpty(txtAsal.getText())) {
             JOptionPane.showMessageDialog(this,
                 "Lokasi asal tidak boleh kosong!",
@@ -173,7 +291,6 @@ public class JadwalForm extends JFrame {
             return false;
         }
         
-        // Validasi lokasi tujuan
         if (!Helper.isNotEmpty(txtTujuan.getText())) {
             JOptionPane.showMessageDialog(this,
                 "Lokasi tujuan tidak boleh kosong!",
@@ -183,36 +300,10 @@ public class JadwalForm extends JFrame {
             return false;
         }
         
-        // Validasi waktu berangkat
-        String berangkatText = txtBerangkat.getText();
-        if (berangkatText.equals("yyyy-MM-dd HH:mm") || berangkatText.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                "Waktu berangkat tidak boleh kosong!",
-                "Validasi Error",
-                JOptionPane.WARNING_MESSAGE);
-            txtBerangkat.requestFocus();
-            return false;
-        }
-        
-        // Validasi waktu tiba
-        String tibaText = txtTiba.getText();
-        if (tibaText.equals("yyyy-MM-dd HH:mm") || tibaText.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                "Waktu tiba tidak boleh kosong!",
-                "Validasi Error",
-                JOptionPane.WARNING_MESSAGE);
-            txtTiba.requestFocus();
-            return false;
-        }
-        
-        // Validasi format datetime
         try {
-            LocalDateTime berangkat = LocalDateTime.parse(berangkatText,
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-            LocalDateTime tiba = LocalDateTime.parse(tibaText,
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            LocalDateTime berangkat = getDateTimeFromSpinners(spnBerangkatTanggal, spnBerangkatJam, spnBerangkatMenit);
+            LocalDateTime tiba = getDateTimeFromSpinners(spnTibaTanggal, spnTibaJam, spnTibaMenit);
             
-            // Validasi waktu berangkat harus sebelum waktu tiba
             if (!berangkat.isBefore(tiba)) {
                 JOptionPane.showMessageDialog(this,
                     "Waktu berangkat harus sebelum waktu tiba!",
@@ -221,7 +312,6 @@ public class JadwalForm extends JFrame {
                 return false;
             }
             
-            // Validasi waktu berangkat harus di masa depan (untuk mode tambah)
             if (mode.equals("tambah") && !Helper.isFutureDateTime(berangkat)) {
                 JOptionPane.showMessageDialog(this,
                     "Waktu berangkat harus di masa depan!",
@@ -230,15 +320,14 @@ public class JadwalForm extends JFrame {
                 return false;
             }
             
-        } catch (DateTimeParseException e) {
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "Format tanggal tidak valid!\nGunakan format: yyyy-MM-dd HH:mm\nContoh: 2024-12-25 10:30",
+                "Error pada format tanggal/waktu!",
                 "Validasi Error",
                 JOptionPane.ERROR_MESSAGE);
             return false;
         }
         
-        // Validasi harga
         try {
             double harga = Double.parseDouble(txtHarga.getText());
             if (!Helper.isValidHarga(harga)) {
@@ -271,15 +360,8 @@ public class JadwalForm extends JFrame {
             String asal = Helper.sanitizeInput(txtAsal.getText());
             String tujuan = Helper.sanitizeInput(txtTujuan.getText());
             
-            LocalDateTime berangkat = LocalDateTime.parse(
-                txtBerangkat.getText(),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-            );
-            
-            LocalDateTime tiba = LocalDateTime.parse(
-                txtTiba.getText(),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-            );
+            LocalDateTime berangkat = getDateTimeFromSpinners(spnBerangkatTanggal, spnBerangkatJam, spnBerangkatMenit);
+            LocalDateTime tiba = getDateTimeFromSpinners(spnTibaTanggal, spnTibaJam, spnTibaMenit);
             
             double harga = Double.parseDouble(txtHarga.getText());
             
@@ -295,7 +377,6 @@ public class JadwalForm extends JFrame {
                 "Sukses",
                 JOptionPane.INFORMATION_MESSAGE);
             
-            clearForm();
             dispose();
             
         } catch (DatabaseException ex) {
@@ -321,15 +402,8 @@ public class JadwalForm extends JFrame {
             String asal = Helper.sanitizeInput(txtAsal.getText());
             String tujuan = Helper.sanitizeInput(txtTujuan.getText());
             
-            LocalDateTime berangkat = LocalDateTime.parse(
-                txtBerangkat.getText(),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-            );
-            
-            LocalDateTime tiba = LocalDateTime.parse(
-                txtTiba.getText(),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-            );
+            LocalDateTime berangkat = getDateTimeFromSpinners(spnBerangkatTanggal, spnBerangkatJam, spnBerangkatMenit);
+            LocalDateTime tiba = getDateTimeFromSpinners(spnTibaTanggal, spnTibaJam, spnTibaMenit);
             
             double harga = Double.parseDouble(txtHarga.getText());
             
@@ -363,20 +437,5 @@ public class JadwalForm extends JFrame {
                 JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
         }
-    }
-    
-    private void clearForm() {
-        txtAsal.setText("");
-        txtTujuan.setText("");
-        txtBerangkat.setText("yyyy-MM-dd HH:mm");
-        txtBerangkat.setForeground(Color.GRAY);
-        txtTiba.setText("yyyy-MM-dd HH:mm");
-        txtTiba.setForeground(Color.GRAY);
-        txtHarga.setText("");
-    }
-    
-    // Method untuk dipanggil dari luar jika ingin refresh data
-    public void refreshData() {
-        clearForm();
     }
 }
