@@ -8,185 +8,146 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KursiDAO {
-
     private Connection connection;
 
     public KursiDAO() throws DatabaseException, SQLException {
         this.connection = DatabaseConnection.getInstance().getConnection();
     }
 
-    // ==============================
-    // TAMBAH KURSI
-    // ==============================
     public void tambahKursi(Kursi kursi) throws DatabaseException {
-        String sql = """
-            INSERT INTO kursi (id_kursi, id_jadwal, nomor_kursi, tersedia)
-            VALUES (?, ?, ?, ?)
-        """;
-
+        String sql = "INSERT INTO kursi (id_tiket, nomor_kursi, tersedia) VALUES (?, ?, ?)";
+        
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, kursi.getIdKursi());
-            stmt.setString(2, kursi.getIdJadwal());
-            stmt.setInt(3, kursi.getNomorKursi());
-            stmt.setBoolean(4, kursi.isTersedia());
+            stmt.setString(1, kursi.getIdTiket());
+            stmt.setInt(2, kursi.getNomorKursi());
+            stmt.setBoolean(3, kursi.isTersedia());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new DatabaseException("Gagal menambah kursi", e);
+            throw new DatabaseException("Gagal menambah kursi: " + e.getMessage(), e);
         }
     }
 
-    // ==============================
-    // UPDATE STATUS KURSI (BY ID_KURSI)
-    // ==============================
-    public void updateStatusKursi(String idKursi, boolean tersedia) throws DatabaseException {
-        String sql = "UPDATE kursi SET tersedia=? WHERE id_kursi=?";
-
+    public void updateStatusKursi(String idTiket, boolean tersedia) throws DatabaseException {
+        String sql = "UPDATE kursi SET tersedia=? WHERE id_tiket=?";
+        
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setBoolean(1, tersedia);
-            stmt.setString(2, idKursi);
+            stmt.setString(2, idTiket);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new DatabaseException("Gagal update status kursi", e);
+            throw new DatabaseException("Gagal update status kursi: " + e.getMessage(), e);
         }
     }
 
-    // ==============================
-    // AMBIL KURSI BY ID
-    // ==============================
-    public Kursi getKursiById(String idKursi) throws DatabaseException {
-        String sql = "SELECT * FROM kursi WHERE id_kursi=?";
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, idKursi);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return mapResultSet(rs);
+    public List<Kursi> getKursiTersedia() throws DatabaseException {
+        List<Kursi> kursiList = new ArrayList<>();
+        String sql = "SELECT * FROM kursi WHERE tersedia=true";
+        
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            while (rs.next()) {
+                Kursi kursi = new Kursi();
+                kursi.setIdTiket(rs.getString("id_tiket"));
+                kursi.setNomorKursi(rs.getInt("nomor_kursi"));
+                kursi.setTersedia(rs.getBoolean("tersedia"));
+                
+                kursiList.add(kursi);
             }
         } catch (SQLException e) {
-            throw new DatabaseException("Gagal mengambil kursi", e);
+            throw new DatabaseException("Gagal mengambil kursi tersedia: " + e.getMessage(), e);
         }
-        return null;
+        
+        return kursiList;
     }
 
-    // ==============================
-    // AMBIL KURSI BY JADWAL + NOMOR
-    // ==============================
+    public Kursi getKursiById(String idTiket) throws DatabaseException {
+        String sql = "SELECT * FROM kursi WHERE id_tiket=?";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, idTiket);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                Kursi kursi = new Kursi();
+                kursi.setIdTiket(rs.getString("id_tiket"));
+                kursi.setNomorKursi(rs.getInt("nomor_kursi"));
+                kursi.setTersedia(rs.getBoolean("tersedia"));
+                
+                return kursi;
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Gagal mengambil kursi: " + e.getMessage(), e);
+        }
+        
+        return null;
+    }
+    
+    // Method baru untuk mendapatkan kursi berdasarkan jadwal dan nomor
     public Kursi getKursiByJadwalAndNomor(String idJadwal, int nomorKursi) throws DatabaseException {
-        String sql = """
-            SELECT * FROM kursi
-            WHERE id_jadwal=? AND nomor_kursi=?
-        """;
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, idJadwal);
-            stmt.setInt(2, nomorKursi);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return mapResultSet(rs);
-            }
-        } catch (SQLException e) {
-            throw new DatabaseException("Gagal mengambil kursi by jadwal & nomor", e);
-        }
-        return null;
+        // Format: KRS-JDW-XXX-NN
+        String idKursi = "KRS-" + idJadwal + "-" + String.format("%02d", nomorKursi);
+        return getKursiById(idKursi);
     }
-
-    // ==============================
-    // UPDATE STATUS KURSI (BY JADWAL + NOMOR)
-    // ==============================
-    public void updateStatusKursi(String idJadwal, int nomorKursi, boolean tersedia)
-            throws DatabaseException {
-
-        String sql = """
-            UPDATE kursi
-            SET tersedia=?
-            WHERE id_jadwal=? AND nomor_kursi=?
-        """;
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setBoolean(1, tersedia);
-            stmt.setString(2, idJadwal);
-            stmt.setInt(3, nomorKursi);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new DatabaseException("Gagal update status kursi", e);
-        }
-    }
-
-    // ==============================
-    // KURSI TERSEDIA BY JADWAL
-    // ==============================
+    
+    // Method baru untuk mendapatkan kursi tersedia berdasarkan jadwal
     public List<Kursi> getKursiTersediaByJadwal(String idJadwal) throws DatabaseException {
-        String sql = """
-            SELECT * FROM kursi
-            WHERE id_jadwal=? AND tersedia=true
-            ORDER BY nomor_kursi
-        """;
-
-        List<Kursi> list = new ArrayList<>();
-
+        List<Kursi> kursiList = new ArrayList<>();
+        String sql = "SELECT * FROM kursi WHERE id_tiket LIKE ? AND tersedia=true";
+        
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, idJadwal);
+            stmt.setString(1, "KRS-" + idJadwal + "-%");
             ResultSet rs = stmt.executeQuery();
-
+            
             while (rs.next()) {
-                list.add(mapResultSet(rs));
+                Kursi kursi = new Kursi();
+                kursi.setIdTiket(rs.getString("id_tiket"));
+                kursi.setNomorKursi(rs.getInt("nomor_kursi"));
+                kursi.setTersedia(rs.getBoolean("tersedia"));
+                
+                kursiList.add(kursi);
             }
         } catch (SQLException e) {
-            throw new DatabaseException("Gagal mengambil kursi tersedia", e);
+            throw new DatabaseException("Gagal mengambil kursi tersedia: " + e.getMessage(), e);
         }
-        return list;
+        
+        return kursiList;
     }
-
-    // ==============================
-    // SEMUA KURSI BY JADWAL
-    // ==============================
+    
+    // Method baru untuk mendapatkan semua kursi berdasarkan jadwal
     public List<Kursi> getAllKursiByJadwal(String idJadwal) throws DatabaseException {
-        String sql = """
-            SELECT * FROM kursi
-            WHERE id_jadwal=?
-            ORDER BY nomor_kursi
-        """;
-
-        List<Kursi> list = new ArrayList<>();
-
+        List<Kursi> kursiList = new ArrayList<>();
+        String sql = "SELECT * FROM kursi WHERE id_tiket LIKE ? ORDER BY nomor_kursi";
+        
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, idJadwal);
+            stmt.setString(1, "KRS-" + idJadwal + "-%");
             ResultSet rs = stmt.executeQuery();
-
+            
             while (rs.next()) {
-                list.add(mapResultSet(rs));
+                Kursi kursi = new Kursi();
+                kursi.setIdTiket(rs.getString("id_tiket"));
+                kursi.setNomorKursi(rs.getInt("nomor_kursi"));
+                kursi.setTersedia(rs.getBoolean("tersedia"));
+                
+                kursiList.add(kursi);
             }
         } catch (SQLException e) {
-            throw new DatabaseException("Gagal mengambil semua kursi", e);
+            throw new DatabaseException("Gagal mengambil semua kursi: " + e.getMessage(), e);
         }
-        return list;
+        
+        return kursiList;
     }
 
-    // ==============================
-    // HAPUS KURSI
-    // ==============================
-    public void hapusKursi(String idKursi) throws DatabaseException {
-        String sql = "DELETE FROM kursi WHERE id_kursi=?";
+    // Tambahkan method ini di KursiDAO.java
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, idKursi);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new DatabaseException("Gagal hapus kursi", e);
-        }
+public void hapusKursi(String idTiket) throws DatabaseException {
+    String sql = "DELETE FROM kursi WHERE id_tiket=?";
+    
+    try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        stmt.setString(1, idTiket);
+        stmt.executeUpdate();
+    } catch (SQLException e) {
+        throw new DatabaseException("Gagal hapus kursi: " + e.getMessage(), e);
     }
-
-    // ==============================
-    // MAPPING RESULTSET
-    // ==============================
-    private Kursi mapResultSet(ResultSet rs) throws SQLException {
-        Kursi kursi = new Kursi();
-        kursi.setIdKursi(rs.getString("id_kursi"));
-        kursi.setIdJadwal(rs.getString("id_jadwal"));
-        kursi.setNomorKursi(rs.getInt("nomor_kursi"));
-        kursi.setTersedia(rs.getBoolean("tersedia"));
-        return kursi;
-    }
+}
 }

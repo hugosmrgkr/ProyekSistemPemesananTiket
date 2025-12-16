@@ -11,28 +11,25 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.List;
-import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 
 public class PesanTiketFrame extends JFrame {
 
     private JadwalController jadwalController;
     private PemesananController pemesananController;
 
-    private JComboBox<String> cmbJadwal;
-    private JTextField txtKursi;
+    private JTextField txtIdJadwal, txtKursi;
     private JTextField txtNama, txtEmail, txtTelepon;
     private JComboBox<String> cmbMetode;
     private int kursiTerpilih = -1;
 
     private Jadwal jadwalAktif;
-    private List<Jadwal> daftarJadwal;
 
     public PesanTiketFrame(JadwalController jc, PemesananController pc) {
         this.jadwalController = jc;
         this.pemesananController = pc;
 
         setTitle("Pesan Tiket Bus");
-        setSize(550, 550);
+        setSize(500, 500);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
@@ -40,258 +37,133 @@ public class PesanTiketFrame extends JFrame {
     }
 
     private void initUI() {
-        JPanel mainPanel = new JPanel(new BorderLayout(15, 15));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        mainPanel.setBackground(new Color(245, 247, 250));
-        
-        // Title
-        JLabel lblTitle = new JLabel("FORM PEMESANAN TIKET", SwingConstants.CENTER);
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        lblTitle.setForeground(new Color(44, 62, 80));
-        lblTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
-        mainPanel.add(lblTitle, BorderLayout.NORTH);
-        
-        // Form Panel
-        JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBackground(Color.WHITE);
-        formPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(220, 225, 230), 1),
-            BorderFactory.createEmptyBorder(20, 20, 20, 20)
-        ));
-        
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(8, 5, 8, 5);
-        
-        int row = 0;
-        
-        // Pilih Jadwal
-        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        formPanel.add(createLabel("Pilih Jadwal:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 1;
-        cmbJadwal = new JComboBox<>();
-        cmbJadwal.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cmbJadwal.setBackground(Color.WHITE);
-        formPanel.add(cmbJadwal, gbc);
-        row++;
+        JPanel panel = new JPanel(new GridLayout(9, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Nomor Kursi - INISIALISASI DULU SEBELUM LOAD DATA
-        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        JLabel lblKursi = createLabel("Nomor Kursi:");
-        JLabel lblKursiInfo = new JLabel("(Klik 'Pilih' untuk memilih kursi)");
-        lblKursiInfo.setFont(new Font("Segoe UI", Font.ITALIC, 11));
-        lblKursiInfo.setForeground(new Color(127, 140, 141));
-        JPanel lblKursiPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        lblKursiPanel.setBackground(Color.WHITE);
-        lblKursiPanel.add(lblKursi);
-        lblKursiPanel.add(Box.createHorizontalStrut(5));
-        lblKursiPanel.add(lblKursiInfo);
-        formPanel.add(lblKursiPanel, gbc);
-        
-        gbc.gridx = 1; gbc.weightx = 1;
+        // ID Jadwal
+        panel.add(new JLabel("ID Jadwal"));
+        txtIdJadwal = new JTextField();
+        panel.add(txtIdJadwal);
+
+        JButton btnCari = new JButton("Cari Jadwal");
+        btnCari.setBackground(new Color(52, 152, 219));
+        btnCari.setForeground(Color.WHITE);
+        btnCari.setFocusPainted(false);
+        panel.add(btnCari);
+        panel.add(new JLabel());
+
+        // Nomor Kursi
+        panel.add(new JLabel("Nomor Kursi"));
         JPanel kursiPanel = new JPanel(new BorderLayout(5, 0));
-        kursiPanel.setBackground(Color.WHITE);
-        txtKursi = createTextField();
+        txtKursi = new JTextField();
         txtKursi.setEditable(false);
-        txtKursi.setBackground(new Color(248, 249, 250));
-        
+        txtKursi.setBackground(Color.WHITE);
         JButton btnPilih = new JButton("Pilih");
-        btnPilih.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnPilih.setBackground(new Color(46, 204, 113));
         btnPilih.setForeground(Color.WHITE);
         btnPilih.setFocusPainted(false);
-        btnPilih.setBorderPainted(false);
-        btnPilih.setOpaque(true);
-        btnPilih.setContentAreaFilled(true);
-        btnPilih.setPreferredSize(new Dimension(70, 30));
-        btnPilih.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        kursiPanel.add(txtKursi, BorderLayout.CENTER);
+        kursiPanel.add(btnPilih, BorderLayout.EAST);
+        panel.add(kursiPanel);
+
+        // Nama
+        panel.add(new JLabel("Nama"));
+        txtNama = new JTextField();
+        panel.add(txtNama);
+
+        // Email
+        panel.add(new JLabel("Email"));
+        txtEmail = new JTextField();
+        panel.add(txtEmail);
+
+        // Telepon
+        panel.add(new JLabel("Telepon"));
+        txtTelepon = new JTextField();
+        panel.add(txtTelepon);
+
+        // Metode Pembayaran
+        panel.add(new JLabel("Metode Pembayaran"));
+        cmbMetode = new JComboBox<>(new String[]{
+                "Transfer Bank", "E-Wallet", "Cash"
+        });
+        panel.add(cmbMetode);
+
+        JButton btnPesan = new JButton("Pesan & Bayar");
+        btnPesan.setBackground(new Color(46, 204, 113));
+        btnPesan.setForeground(Color.WHITE);
+        btnPesan.setFont(new Font("Arial", Font.BOLD, 12));
+        btnPesan.setFocusPainted(false);
+        
+        JButton btnBatal = new JButton("Batal");
+        btnBatal.setBackground(new Color(231, 76, 60));
+        btnBatal.setForeground(Color.WHITE);
+        btnBatal.setFont(new Font("Arial", Font.BOLD, 12));
+        btnBatal.setFocusPainted(false);
+
+        panel.add(btnPesan);
+        panel.add(btnBatal);
+
+        add(panel);
+
+        // ================= EVENT =================
+        btnCari.addActionListener(e -> cariJadwal());
+        
         btnPilih.addActionListener(e -> {
             if (jadwalAktif == null) {
                 JOptionPane.showMessageDialog(this,
-                        "Pilih jadwal terlebih dahulu!",
+                        "Cari jadwal terlebih dahulu!",
                         "Peringatan",
                         JOptionPane.WARNING_MESSAGE);
                 return;
             }
             tampilkanDialogPilihKursi();
         });
-        
-        kursiPanel.add(txtKursi, BorderLayout.CENTER);
-        kursiPanel.add(btnPilih, BorderLayout.EAST);
-        formPanel.add(kursiPanel, gbc);
-        row++;
 
-        // Nama
-        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        formPanel.add(createLabel("Nama:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 1;
-        txtNama = createTextField();
-        formPanel.add(txtNama, gbc);
-        row++;
-
-        // Email
-        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        formPanel.add(createLabel("Email:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 1;
-        txtEmail = createTextField();
-        formPanel.add(txtEmail, gbc);
-        row++;
-
-        // Telepon
-        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        formPanel.add(createLabel("Telepon:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 1;
-        txtTelepon = createTextField();
-        formPanel.add(txtTelepon, gbc);
-        row++;
-
-        // Metode Pembayaran
-        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        formPanel.add(createLabel("Metode Pembayaran:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 1;
-        cmbMetode = new JComboBox<>(new String[]{
-                "Transfer Bank", "E-Wallet", "Cash"
-        });
-        cmbMetode.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cmbMetode.setBackground(Color.WHITE);
-        formPanel.add(cmbMetode, gbc);
-        
-        mainPanel.add(formPanel, BorderLayout.CENTER);
-        
-        // Button Panel
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 0));
-        buttonPanel.setBackground(new Color(245, 247, 250));
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
-
-        JButton btnPesan = new JButton("Pesan & Bayar");
-        btnPesan.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnPesan.setPreferredSize(new Dimension(150, 38));
-        btnPesan.setBackground(new Color(46, 204, 113));
-        btnPesan.setForeground(Color.WHITE);
-        btnPesan.setFocusPainted(false);
-        btnPesan.setBorderPainted(false);
-        btnPesan.setOpaque(true);
-        btnPesan.setContentAreaFilled(true);
-        btnPesan.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnPesan.addActionListener(e -> pesanTiket());
-        
-        JButton btnBatal = new JButton("Batal");
-        btnBatal.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnBatal.setPreferredSize(new Dimension(150, 38));
-        btnBatal.setBackground(new Color(231, 76, 60));
-        btnBatal.setForeground(Color.WHITE);
-        btnBatal.setFocusPainted(false);
-        btnBatal.setBorderPainted(false);
-        btnBatal.setOpaque(true);
-        btnBatal.setContentAreaFilled(true);
-        btnBatal.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnBatal.addActionListener(e -> dispose());
-
-        buttonPanel.add(btnPesan);
-        buttonPanel.add(btnBatal);
-        
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-
-        add(mainPanel);
-        
-        // LOAD DATA DAN SET ACTION LISTENER DI AKHIR SETELAH SEMUA KOMPONEN SIAP
-        loadJadwalTersedia();
-        cmbJadwal.addActionListener(e -> onJadwalSelected());
-    }
-    
-    private JLabel createLabel(String text) {
-        JLabel label = new JLabel(text);
-        label.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        label.setForeground(new Color(52, 73, 94));
-        return label;
-    }
-    
-    private JTextField createTextField() {
-        JTextField textField = new JTextField();
-        textField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        textField.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
-            BorderFactory.createEmptyBorder(6, 8, 6, 8)
-        ));
-        return textField;
-    }
-
-    private void loadJadwalTersedia() {
-        try {
-            daftarJadwal = jadwalController.getAllJadwal();
-            cmbJadwal.removeAllItems();
-            
-            if (daftarJadwal.isEmpty()) {
-                cmbJadwal.addItem("-- Belum ada jadwal tersedia --");
-            } else {
-                cmbJadwal.addItem("-- Pilih Jadwal --");
-                for (Jadwal jadwal : daftarJadwal) {
-                    String item = String.format("%s | %s → %s | %s | %s",
-                        jadwal.getIdJadwal(),
-                        jadwal.getLokasiAsal(),
-                        jadwal.getLokasiTujuan(),
-                        Helper.formatForDisplay(jadwal.getWaktuBerangkat()),
-                        Helper.formatRupiahWithoutDecimal(jadwal.getHarga())
-                    );
-                    cmbJadwal.addItem(item);
-                }
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this,
-                "Gagal memuat jadwal: " + e.getMessage(),
-                "Error",
-                JOptionPane.ERROR_MESSAGE);
-        }
-    }
-    
-    private void onJadwalSelected() {
-        int selectedIndex = cmbJadwal.getSelectedIndex();
-        
-        if (selectedIndex <= 0 || daftarJadwal == null || daftarJadwal.isEmpty()) {
-            jadwalAktif = null;
-            kursiTerpilih = -1;
-            txtKursi.setText("");
-            return;
-        }
-        
-        // Index 0 adalah "-- Pilih Jadwal --", jadi jadwal mulai dari index 1
-        jadwalAktif = daftarJadwal.get(selectedIndex - 1);
-        
-        // Reset kursi
-        kursiTerpilih = -1;
-        txtKursi.setText("");
-        
-        try {
-            int kursiTersedia = jadwalController.getJumlahKursiTersedia(jadwalAktif.getIdJadwal());
-            
-            JOptionPane.showMessageDialog(this,
-                String.format(
-                    "Jadwal dipilih:\n\n" +
-                    "ID: %s\n" +
-                    "Rute: %s → %s\n" +
-                    "Berangkat: %s\n" +
-                    "Harga: %s\n" +
-                    "Kursi Tersedia: %d/40\n\n" +
-                    "Silakan pilih nomor kursi!",
-                    jadwalAktif.getIdJadwal(),
-                    jadwalAktif.getLokasiAsal(),
-                    jadwalAktif.getLokasiTujuan(),
-                    Helper.formatForDisplay(jadwalAktif.getWaktuBerangkat()),
-                    Helper.formatRupiahWithoutDecimal(jadwalAktif.getHarga()),
-                    kursiTersedia
-                ),
-                "Info Jadwal",
-                JOptionPane.INFORMATION_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this,
-                "Error: " + e.getMessage(),
-                "Error",
-                JOptionPane.ERROR_MESSAGE);
-        }
     }
 
     private void cariJadwal() {
-        // Method ini tidak digunakan lagi karena sudah pakai combo box
+        try {
+            String idJadwal = txtIdJadwal.getText().trim();
+            
+            if (idJadwal.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                    "Masukkan ID Jadwal terlebih dahulu!",
+                    "Peringatan",
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            
+            jadwalAktif = jadwalController.getJadwalById(idJadwal);
+
+            int kursiTersedia = jadwalController.getJumlahKursiTersedia(idJadwal);
+            
+            // Reset kursi terpilih
+            kursiTerpilih = -1;
+            txtKursi.setText("");
+            
+            JOptionPane.showMessageDialog(this,
+                String.format(
+                    "Jadwal ditemukan!\n\n" +
+                    "Rute: %s → %s\n" +
+                    "Berangkat: %s\n" +
+                    "Harga: %s\n\n" +
+                    "Klik tombol 'Pilih' untuk memilih kursi",
+                    jadwalAktif.getLokasiAsal(),
+                    jadwalAktif.getLokasiTujuan(),
+                    Helper.formatForDisplay(jadwalAktif.getWaktuBerangkat()),
+                    Helper.formatRupiahWithoutDecimal(jadwalAktif.getHarga())
+                ),
+                "Jadwal Ditemukan",
+                JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                "Jadwal tidak ditemukan!\n" + e.getMessage(),
+                "Error",
+                JOptionPane.ERROR_MESSAGE);
+        }
     }
     
     private void tampilkanDialogPilihKursi() {
@@ -301,38 +173,40 @@ public class PesanTiketFrame extends JFrame {
         
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-        mainPanel.setBackground(Color.WHITE);
         
+        // Header
         JLabel lblHeader = new JLabel("Pilih Nomor Kursi", SwingConstants.CENTER);
-        lblHeader.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblHeader.setFont(new Font("Arial", Font.BOLD, 16));
         mainPanel.add(lblHeader, BorderLayout.NORTH);
         
+        // Panel Legenda
         JPanel legendPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 5));
-        legendPanel.setBackground(Color.WHITE);
         legendPanel.add(createLegendItem("Tersedia", new Color(46, 204, 113)));
         legendPanel.add(createLegendItem("Terisi", new Color(231, 76, 60)));
         legendPanel.add(createLegendItem("Terpilih", new Color(241, 196, 15)));
         
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(Color.WHITE);
         topPanel.add(legendPanel, BorderLayout.CENTER);
         mainPanel.add(topPanel, BorderLayout.NORTH);
         
+        // Panel Kursi
         JPanel panelKursi = new JPanel(new GridLayout(10, 4, 8, 8));
         panelKursi.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        panelKursi.setBackground(Color.WHITE);
         
         JButton[] btnKursi = new JButton[40];
         final int[] kursiDipilih = {-1};
         
+        // Load status kursi
         try {
             List<Kursi> allKursi = pemesananController.getAllKursiByJadwal(jadwalAktif.getIdJadwal());
-            boolean[] statusKursi = new boolean[40];
+            boolean[] statusKursi = new boolean[40]; // true = tersedia
             
+            // Default semua tersedia
             for (int i = 0; i < 40; i++) {
                 statusKursi[i] = true;
             }
             
+            // Update status dari database
             for (Kursi kursi : allKursi) {
                 int idx = kursi.getNomorKursi() - 1;
                 if (idx >= 0 && idx < 40) {
@@ -340,31 +214,33 @@ public class PesanTiketFrame extends JFrame {
                 }
             }
             
+            // Buat tombol kursi
             for (int i = 0; i < 40; i++) {
                 final int nomorKursi = i + 1;
                 btnKursi[i] = new JButton(String.valueOf(nomorKursi));
                 btnKursi[i].setPreferredSize(new Dimension(60, 50));
-                btnKursi[i].setFont(new Font("Segoe UI", Font.BOLD, 14));
+                btnKursi[i].setFont(new Font("Arial", Font.BOLD, 14));
                 btnKursi[i].setFocusPainted(false);
-                btnKursi[i].setBorderPainted(false);
-                btnKursi[i].setOpaque(true);
-                btnKursi[i].setContentAreaFilled(true);
                 
                 if (statusKursi[i]) {
+                    // Kursi tersedia
                     btnKursi[i].setEnabled(true);
                     btnKursi[i].setBackground(new Color(46, 204, 113));
                     btnKursi[i].setForeground(Color.WHITE);
-                    btnKursi[i].setCursor(new Cursor(Cursor.HAND_CURSOR));
                     
                     final int idx = i;
                     btnKursi[i].addActionListener(e -> {
+                        // Reset kursi sebelumnya
                         if (kursiDipilih[0] != -1) {
                             btnKursi[kursiDipilih[0] - 1].setBackground(new Color(46, 204, 113));
                         }
+                        
+                        // Set kursi baru
                         kursiDipilih[0] = nomorKursi;
                         btnKursi[idx].setBackground(new Color(241, 196, 15));
                     });
                 } else {
+                    // Kursi sudah terisi
                     btnKursi[i].setEnabled(false);
                     btnKursi[i].setBackground(new Color(231, 76, 60));
                     btnKursi[i].setForeground(Color.WHITE);
@@ -384,30 +260,20 @@ public class PesanTiketFrame extends JFrame {
         scrollPane.setPreferredSize(new Dimension(400, 350));
         mainPanel.add(scrollPane, BorderLayout.CENTER);
         
+        // Panel Button
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        buttonPanel.setBackground(Color.WHITE);
         
         JButton btnOK = new JButton("OK");
         btnOK.setPreferredSize(new Dimension(100, 35));
-        btnOK.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnOK.setBackground(new Color(46, 204, 113));
         btnOK.setForeground(Color.WHITE);
         btnOK.setFocusPainted(false);
-        btnOK.setBorderPainted(false);
-        btnOK.setOpaque(true);
-        btnOK.setContentAreaFilled(true);
-        btnOK.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         JButton btnCancel = new JButton("Batal");
         btnCancel.setPreferredSize(new Dimension(100, 35));
-        btnCancel.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnCancel.setBackground(new Color(231, 76, 60));
         btnCancel.setForeground(Color.WHITE);
         btnCancel.setFocusPainted(false);
-        btnCancel.setBorderPainted(false);
-        btnCancel.setOpaque(true);
-        btnCancel.setContentAreaFilled(true);
-        btnCancel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         btnOK.addActionListener(e -> {
             if (kursiDipilih[0] != -1) {
@@ -435,7 +301,6 @@ public class PesanTiketFrame extends JFrame {
     
     private JPanel createLegendItem(String text, Color color) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        panel.setBackground(Color.WHITE);
         
         JLabel colorBox = new JLabel("  ");
         colorBox.setOpaque(true);
@@ -444,7 +309,7 @@ public class PesanTiketFrame extends JFrame {
         colorBox.setPreferredSize(new Dimension(20, 20));
         
         JLabel label = new JLabel(text);
-        label.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        label.setFont(new Font("Arial", Font.PLAIN, 11));
         
         panel.add(colorBox);
         panel.add(label);
@@ -469,6 +334,7 @@ public class PesanTiketFrame extends JFrame {
             return;
         }
         
+        // Validasi input
         if (!Helper.isNotEmpty(txtNama.getText())) {
             JOptionPane.showMessageDialog(this,
                 "Nama tidak boleh kosong!",
@@ -497,6 +363,7 @@ public class PesanTiketFrame extends JFrame {
         }
 
         try {
+            // Buat pelanggan
             Pelanggan pelanggan = new Pelanggan(
                 Helper.generatePelangganId(),
                 Helper.sanitizeInput(txtNama.getText()),
@@ -504,18 +371,21 @@ public class PesanTiketFrame extends JFrame {
                 Helper.sanitizeInput(txtTelepon.getText())
             );
 
+            // Pesan tiket
             Tiket tiket = pemesananController.pesanTiket(
                 jadwalAktif.getIdJadwal(),
                 kursiTerpilih,
                 pelanggan
             );
 
+            // Buat transaksi
             Transaksi transaksi = pemesananController.buatTransaksi(
                 tiket,
                 cmbMetode.getSelectedItem().toString(),
                 pelanggan
             );
 
+            // Konfirmasi pembayaran
             int konfirmasi = JOptionPane.showConfirmDialog(
                 this,
                 String.format(
@@ -539,13 +409,17 @@ public class PesanTiketFrame extends JFrame {
             );
 
             if (konfirmasi == JOptionPane.YES_OPTION) {
+                // Proses pembayaran
                 pemesananController.bayarTransaksi(transaksi.getIdTransaksi());
 
-               String struk = pemesananController.cetakStrukSederhana(
-                    tiket.getIdTiket()
+                // Cetak struk
+                String struk = pemesananController.cetakStruk(
+                    tiket.getIdTiket(),
+                    jadwalAktif.getIdJadwal(),
+                    pelanggan
                 );
 
-
+                // Tampilkan struk
                 JTextArea area = new JTextArea(struk);
                 area.setEditable(false);
                 area.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -567,6 +441,7 @@ public class PesanTiketFrame extends JFrame {
                 "Kursi Tidak Tersedia",
                 JOptionPane.ERROR_MESSAGE);
             
+            // Reset kursi
             kursiTerpilih = -1;
             txtKursi.setText("");
             

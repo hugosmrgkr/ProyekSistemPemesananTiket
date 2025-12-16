@@ -7,7 +7,7 @@ import java.sql.SQLException;
 public class DatabaseConnection {
 
     private static final String DB_URL =
-            "jdbc:mysql://localhost:3308/db_pemesanan_tiket?useSSL=false&serverTimezone=UTC";
+            "jdbc:mysql://localhost:3307/db_pemesanan_tiket?useSSL=false&serverTimezone=UTC";
     private static final String DB_USERNAME = "root";
     private static final String DB_PASSWORD = "";
 

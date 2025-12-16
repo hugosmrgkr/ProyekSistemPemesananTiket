@@ -6,7 +6,6 @@ import com.tiket.exception.DatabaseException;
 
 import javax.swing.*;
 import java.awt.*;
-import java.sql.SQLException; 
 
 public class MainFrame extends JFrame {
     
@@ -20,14 +19,14 @@ public class MainFrame extends JFrame {
         try {
             this.jadwalController = new JadwalController();
             this.pemesananController = new PemesananController();
-        } catch (DatabaseException | SQLException e) {
+        } catch (DatabaseException e) {
             JOptionPane.showMessageDialog(null,
                 "Gagal koneksi database: " + e.getMessage(),
                 "Error",
                 JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
-
+        
         setTitle("Sistem Pemesanan Tiket Bus");
         setSize(900, 600);
         setLocationRelativeTo(null);
@@ -37,6 +36,7 @@ public class MainFrame extends JFrame {
     }
     
     private void initUI() {
+        // Menu Bar
         JMenuBar menuBar = new JMenuBar();
         
         JMenu menuFile = new JMenu("File");
@@ -60,11 +60,14 @@ public class MainFrame extends JFrame {
         
         setJMenuBar(menuBar);
         
+        // Tabbed Pane
         tabbedPane = new JTabbedPane();
         
+        // Tab Jadwal
         jadwalPanel = new JadwalPanel(jadwalController);
         tabbedPane.addTab("Kelola Jadwal", jadwalPanel);
         
+        // Tab Pesan Tiket
         JPanel pesanTiketTab = createPesanTiketTab();
         tabbedPane.addTab("Pesan Tiket", pesanTiketTab);
         
@@ -74,27 +77,20 @@ public class MainFrame extends JFrame {
     private JPanel createPesanTiketTab() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        panel.setBackground(new Color(245, 247, 250));
         
         JLabel lblTitle = new JLabel("PEMESANAN TIKET BUS", SwingConstants.CENTER);
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitle.setForeground(new Color(44, 62, 80));
-        lblTitle.setBorder(BorderFactory.createEmptyBorder(40, 0, 50, 0));
+        lblTitle.setFont(new Font("Arial", Font.BOLD, 20));
+        lblTitle.setBorder(BorderFactory.createEmptyBorder(20, 0, 30, 0));
         
         JButton btnPesanTiket = new JButton("Buat Pemesanan Baru");
         btnPesanTiket.setPreferredSize(new Dimension(250, 50));
-        btnPesanTiket.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        btnPesanTiket.setFont(new Font("Arial", Font.BOLD, 14));
         btnPesanTiket.setBackground(new Color(46, 204, 113));
         btnPesanTiket.setForeground(Color.WHITE);
         btnPesanTiket.setFocusPainted(false);
-        btnPesanTiket.setBorderPainted(false);
-        btnPesanTiket.setOpaque(true);
-        btnPesanTiket.setContentAreaFilled(true);
-        btnPesanTiket.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnPesanTiket.addActionListener(e -> bukaFormPesanTiket());
         
         JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        centerPanel.setBackground(new Color(245, 247, 250));
         centerPanel.add(btnPesanTiket);
         
         panel.add(lblTitle, BorderLayout.NORTH);
@@ -107,6 +103,7 @@ public class MainFrame extends JFrame {
         PesanTiketFrame frame = new PesanTiketFrame(jadwalController, pemesananController);
         frame.setVisible(true);
         
+        // Refresh jadwal panel setelah form ditutup
         frame.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosed(java.awt.event.WindowEvent e) {
@@ -130,13 +127,15 @@ public class MainFrame extends JFrame {
     
     public static void main(String[] args) {
         try {
+            // Set Look and Feel
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             e.printStackTrace();
         }
         
         SwingUtilities.invokeLater(() -> {
-            new MainFrame().setVisible(true);
+            MainFrame frame = new MainFrame();
+            frame.setVisible(true);
         });
     }
 }
